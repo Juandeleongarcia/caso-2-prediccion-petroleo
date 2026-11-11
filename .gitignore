@@ -218,3 +218,28 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Entorno virtual
+.venv/
+
+# Configuración local de Poetry
+poetry.toml
+
+# Datos generados
+data/*.csv
+data/*.parquet
+
+# Credenciales
+.env
+.env.*
+!.env.example
+
+# Archivos de entrenamiento
+*.pt
+*.pth
+*.h5
+*.keras
+
+# Cachés
+__pycache__/
+.pytest_cache/
