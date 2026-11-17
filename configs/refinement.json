@@ -1,0 +1,48 @@
+{
+  "run_id": "cpu-refinement-persistence-init-v1",
+  "data_config": "configs/data.json",
+  "reference_dir": "experiments/cpu-nested-ab-20epochs-seeds-v1",
+  "phase": "development",
+  "architectures": ["RNN", "LSTM", "GRU"],
+  "variants": {
+    "C": {"initialization": "persistence", "loss_function": "mse"},
+    "D": {"initialization": "persistence", "loss_function": "smooth_l1", "huber_beta": 1.0}
+  },
+  "learning_rate": 0.0003,
+  "hidden_size": 32,
+  "num_layers": 1,
+  "output_size": 3,
+  "batch_size": 64,
+  "optimizer": "Adam",
+  "weight_decay": 0.0001,
+  "gradient_clip": 1.0,
+  "max_epochs": 20,
+  "patience": 5,
+  "min_delta": 0.0001,
+  "shuffle_train": true,
+  "threads": 1,
+  "device": "cpu",
+  "initial_seed": 42,
+  "stability_seeds": [42, 123, 2026],
+  "inner_validation_business_days": 252,
+  "refit_on_full_outer_train": false,
+  "validation_metric": "normalized_mse",
+  "epoch_zero": "diagnostic only, excluded from checkpoint selection as in B",
+  "primary_change": "zero output weights and bias=-inner_target_mean/inner_target_scale; target remains unchanged",
+  "loss_evidence": {
+    "source": "replay of 18 original B seed42 checkpoints on their own inner training subsets, no new training",
+    "horizon": 63,
+    "top_5pct_absolute_residual_mse_share_min_pct": 45.66,
+    "top_5pct_absolute_residual_mse_share_max_pct": 63.78,
+    "interpretation": "concentrated squared errors justify one robust-loss comparison, not discarding real crisis observations"
+  },
+  "selection": {
+    "minimum_relative_score_gain": 0.05,
+    "minimum_improved_blocks": 4,
+    "minimum_improved_horizons": 2,
+    "score": "mean MAE/persistence MAE over six blocks x three horizons with equal cell weight",
+    "initial_rule": "seed42 gates against B; at most one passing variant per architecture, lowest score, tie C",
+    "stability_rule": "reuse seed42, add123/2026 only to selected candidate; same gate on means and each seed score below paired B",
+    "fallback": "retain B when no candidate passes, never choose a best seed or backfill a second candidate"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "auto_refresh": true,
+  "refresh_interval_hours": 24,
+  "retry_minutes": 15,
+  "check_interval_seconds": 300
+}

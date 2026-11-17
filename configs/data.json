@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "start": "2000-01-01",
+  "end": "2026-11-11",
+  "snapshot_id": "2026-11-11-official",
+  "original_sha256": "49d80fd7ed1ad32a142d8138554d32066fbb1d82f41bef74911bfd71bb9e64fe",
+  "calendar": "Mon-Fri; no market holiday compression",
+  "decision_timezone": "Europe/Madrid",
+  "decision_hour": 8,
+  "horizons_business_days": [5, 63, 252],
+  "lookback_business_days": 60,
+  "availability_mode": "retrospective_with_explicit_assumptions; NOT historical point-in-time",
+  "sources": {
+    "brent": {"provider": "fred", "id": "DCOILBRENTEU", "unit": "USD/barrel", "required": true, "enabled": true, "lag_business_days": 10, "max_age_business_days": 20},
+    "wti": {"provider": "fred", "id": "DCOILWTICO", "unit": "USD/barrel", "required": true, "enabled": true, "lag_business_days": 10, "max_age_business_days": 20},
+    "gas_natural": {"provider": "fred", "id": "DHHNGSP", "unit": "USD/MMBtu", "required": true, "enabled": true, "lag_business_days": 10, "max_age_business_days": 20},
+    "tipo_bce": {"provider": "fred", "id": "ECBDFR", "unit": "percent", "required": true, "enabled": true, "lag_business_days": 2, "max_age_business_days": 40},
+    "usd_por_eur": {"provider": "fred", "id": "DEXUSEU", "unit": "USD/EUR", "required": true, "enabled": true, "lag_business_days": 10, "max_age_business_days": 20},
+    "cny_por_usd": {"provider": "fred", "id": "DEXCHUS", "unit": "CNY/USD", "required": true, "enabled": true, "lag_business_days": 10, "max_age_business_days": 20},
+    "vix": {"provider": "fred", "id": "VIXCLS", "unit": "index", "required": true, "enabled": true, "lag_business_days": 2, "max_age_business_days": 10},
+    "indice_dolar": {"provider": "yahoo", "id": "DX-Y.NYB", "unit": "index", "required": false, "enabled": true, "lag_business_days": 2, "max_age_business_days": 10},
+    "oro": {"provider": "yahoo", "id": "GC=F", "unit": "futures quote; verify contract metadata", "required": false, "enabled": true, "lag_business_days": 2, "max_age_business_days": 10},
+    "cobre": {"provider": "yahoo", "id": "HG=F", "unit": "futures quote; verify contract metadata", "required": false, "enabled": true, "lag_business_days": 2, "max_age_business_days": 10},
+    "opep_orb": {"provider": "opec", "id": "https://www.opec.org/basket/basketDayArchives.xml", "unit": "USD/barrel", "required": false, "enabled": true, "lag_business_days": 10, "max_age_business_days": 20}
+  },
+  "evaluation": {
+    "protocol_version": "expanding_semiannual_v1",
+    "development_origin_years": [2015, 2017, 2019],
+    "selection_frozen_before": "2021-01-01T08:00:00+01:00",
+    "calibration_origin_years": [2021, 2022],
+    "calibration_errors_available_before": "2024-01-01T08:00:00+01:00",
+    "test_origin_years": [2024],
+    "test_outcomes_end": "2025-12-31",
+    "refit_months": [1, 7],
+    "training_rule": "expanding; every target observed and label_available_at <= training_cutoff; all horizons mature",
+    "scaling_rule": "fit only on each allowed training history; never fit in data preparation",
+    "calibration_rule": "prequential policy residuals from 2021-2022 only; each label mature before test; fixed per-horizon empirical 80% bands; no exact conformal guarantee",
+    "test_rule": "hyperparameters, cadence and interval quantiles frozen; planned refits may use only already available labels; no test-driven selection or recalibration"
+  }
+}

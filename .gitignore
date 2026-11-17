@@ -221,20 +221,44 @@ __marimo__/
 
 # Entorno virtual
 .venv/
+.venv-plots/
 
 # Configuración local de Poetry
 poetry.toml
 
 # Datos generados
+/data/
 data/*.csv
 data/*.parquet
+data/raw/
+data/processed/
+data/supervised/
+data/.cache/
+data/live/
 
 # Credenciales
+.streamlit/secrets*.toml
+**/secrets*.toml
+credentials*.json
+service-account*.json
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+.git-credentials
+.netrc
 .env
 .env.*
 !.env.example
 
 # Archivos de entrenamiento
+experiments/
+# Paquetes locales; el registro de hashes en configs/ sí se versiona.
+/artifacts/local/
+/artifacts/releases/
+*.zip
 *.pt
 *.pth
 *.h5
@@ -243,3 +267,11 @@ data/*.parquet
 # Cachés
 __pycache__/
 .pytest_cache/
+*.tmp
+*.temp
+*.log
+.DS_Store
+Thumbs.db
+
+# Documentacion interna de desarrollo
+docs/auditoria/
