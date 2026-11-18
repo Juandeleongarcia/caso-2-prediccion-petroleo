@@ -312,6 +312,116 @@ class StreamlitTests(unittest.TestCase):
                 self.assertAlmostEqual(float(estimate.error_y.arrayminus[0]), row["price"] - row["lower"])
 
 
+    def test_cold_cloud_start_downloads_pinned_private_bundles_without_research_files(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            isolated = Path(temporary)
+            shutil.copy2(ROOT / "app.py", isolated / "app.py")
+            shutil.copytree(ROOT / "src", isolated / "src", ignore=shutil.ignore_patterns("__pycache__"))
+            shutil.copytree(ROOT / "configs", isolated / "configs")
+            shutil.copytree(ROOT / "artifacts/derived", isolated / "artifacts/derived")
+            environment = {
+                "BRENT_BUNDLE_DIR": str(isolated / "artifacts/local/brent-frozen-v1"),
+                "BRENT_DASHBOARD_DIR": str(isolated / "artifacts/local/brent-dashboard-v1"),
+                "BRENT_AUTO_PREPARE": "1", "BRENT_HF_REPO_ID": "student/brent-models",
+                "BRENT_HF_REVISION": "a" * 40, "HF_TOKEN": "hf_test_only",
+                "BRENT_INFERENCE_URL": "", "BRENT_EVIDENCE_URL": "",
+            }
+
+            def response(request, timeout):
+                self.assertEqual(request.get_header("Authorization"), "Bearer hf_test_only")
+                self.assertIn("/resolve/" + "a" * 40 + "/", request.full_url)
+                archive = ROOT / "artifacts/releases" / request.full_url.rsplit("/", 1)[1]
+                result = io.BytesIO(archive.read_bytes())
+                result.geturl = lambda: "https://cdn.example.test/authorized-download"
+                return result
+
+            with patch.dict(os.environ, environment), patch("oil_forecast.artifacts.build_opener") as opener, \
+                    patch("oil_forecast.acquisition.urlopen", side_effect=AssertionError("Frozen mode required")):
+                opener.return_value.open.side_effect = response
+                app = AppTest.from_file(str(isolated / "app.py"), default_timeout=30).run()
+                self.healthy(app)
+                for page in ("Predicción", "Comparación", "Evaluación", "Metodología"):
+                    app.radio(key="page").set_value(page).run()
+                    self.healthy(app)
+                self.assertEqual(opener.return_value.open.call_count, 2)
+                self.assertTrue(app.session_state["resource_bootstrap_attempted"])
+                self.assertFalse((isolated / "data").exists())
+                self.assertFalse((isolated / "experiments").exists())
+                self.assertFalse((isolated / "artifacts/releases").exists())
+                for element in list(app.error) + list(app.warning) + list(app.info) + list(app.code):
+                    self.assertNotIn("hf_test_only", str(element.value))
+
+    def test_failed_cold_start_does_not_leak_secrets_or_retry_on_navigation(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            missing = Path(temporary)
+            environment = {
+                "BRENT_BUNDLE_DIR": str(missing / "inference"),
+                "BRENT_DASHBOARD_DIR": str(missing / "evidence"),
+                "BRENT_AUTO_PREPARE": "1", "HF_TOKEN": "hf_test_only",
+            }
+            with patch.dict(os.environ, environment), \
+                    patch("oil_forecast.deployment.prepare_application_resources",
+                          side_effect=OSError("hf_test_only private transport detail")) as prepare:
+                app = AppTest.from_file(str(ROOT / "app.py"), default_timeout=30).run()
+                self.assertFalse(list(app.exception))
+                self.assertTrue(list(app.error))
+                app.radio(key="page").set_value("Metodología").run()
+                self.assertEqual(prepare.call_count, 1)
+                for element in list(app.error) + list(app.warning) + list(app.info) + list(app.code):
+                    self.assertNotIn("hf_test_only", str(element.value))
+                app.button(key="prepare_resources").click().run()
+                self.assertEqual(prepare.call_count, 2)
+                self.assertFalse(list(app.exception))
+                self.assertFalse((missing / "inference").exists())
+                self.assertFalse((missing / "evidence").exists())
+
+    def test_secret_bool_disables_provider_refresh_without_environment_export(self):
+        environment = {key: value for key, value in os.environ.items() if key != "BRENT_AUTO_REFRESH"}
+        with patch.dict(os.environ, environment, clear=True), \
+                patch("oil_forecast.app_data.refresh_market_data",
+                      side_effect=AssertionError("Provider use is disabled by the hosting secret")) as provider:
+            self.assertNotIn("BRENT_AUTO_REFRESH", os.environ)
+            app = AppTest.from_file(str(ROOT / "app.py"), default_timeout=30)
+            app.secrets["BRENT_AUTO_REFRESH"] = False
+            app.secrets["BRENT_REFRESH_HOURS"] = 36
+            app.run()
+            self.healthy(app)
+            self.assertFalse(app.toggle(key="auto_refresh").value)
+            self.assertTrue(any("36 horas" in item.value for item in app.caption))
+            app.radio(key="page").set_value("Predicción").run()
+            self.healthy(app)
+            self.assertFalse(app.toggle(key="auto_refresh").value)
+            provider.assert_not_called()
+
+    def test_registered_manifest_is_checked_before_loading_existing_frozen_weights(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            folder = Path(temporary)
+            inference, evidence = folder / "inference", folder / "evidence"
+            shutil.copytree(self.bundle, inference)
+            shutil.copytree(self.evidence, evidence)
+            manifest_path = inference / "artifact_manifest.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            payloads = {file.name: sha256(file) for file in inference.iterdir() if file != manifest_path}
+            manifest["logical_refit_at"] = "2099-01-01T00:00:00+00:00"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            altered_hash = sha256(manifest_path)
+            environment = {"BRENT_BUNDLE_DIR": str(inference), "BRENT_DASHBOARD_DIR": str(evidence),
+                           "BRENT_AUTO_PREPARE": "0"}
+            with patch.dict(os.environ, environment), \
+                    patch("oil_forecast.inference.torch.load",
+                          side_effect=AssertionError("Reject the manifest before loading weights")) as weights, \
+                    patch("oil_forecast.deployment.fetch_bundle",
+                          side_effect=AssertionError("Existing resources must not be downloaded")) as fetch:
+                app = AppTest.from_file(str(ROOT / "app.py"), default_timeout=30).run()
+                self.assertFalse(list(app.exception))
+                self.assertTrue(list(app.error))
+                weights.assert_not_called()
+                fetch.assert_not_called()
+            self.assertEqual(sha256(manifest_path), altered_hash)
+            self.assertEqual(payloads, {file.name: sha256(file) for file in inference.iterdir()
+                                        if file != manifest_path})
+
+
 class RemoteBundleTests(unittest.TestCase):
     def test_fetch_requires_https_and_checks_digest_before_installing(self):
         with tempfile.TemporaryDirectory() as temporary:

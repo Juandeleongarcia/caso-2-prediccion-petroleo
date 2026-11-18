@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+from http.client import HTTPException
 import io
 import json
 from pathlib import Path
@@ -11,7 +12,7 @@ import stat
 import tempfile
 import zipfile
 from urllib.parse import urlparse
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, Request, build_opener, urlopen
 
 import pandas as pd
 import torch
@@ -215,15 +216,61 @@ def install_bundle(archive: Path | str, destination: Path | str, expected_sha256
     return verified
 
 
-def fetch_bundle(url: str, destination: Path | str, expected_sha256: str) -> dict:
+class _HttpsArtifactRedirects(HTTPRedirectHandler):
+    """Validate HTTPS and keep credentials scoped to the canonical Hub origin."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        parsed = urlparse(newurl)
+        if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
+            raise ValueError("Artifact redirects require HTTPS without embedded credentials")
+        redirected = super().redirect_request(req, fp, code, msg, headers, newurl)
+        if redirected is not None:
+            redirected.remove_header("Authorization")
+            origin = urlparse(req.full_url)
+            try:
+                same_hub = (origin.scheme == "https" and origin.hostname == parsed.hostname == "huggingface.co"
+                            and not origin.username and not origin.password
+                            and origin.port in (None, 443) and parsed.port in (None, 443))
+            except ValueError:
+                same_hub = False
+            authorization = req.get_header("Authorization")
+            if same_hub and authorization:
+                redirected.add_unredirected_header("Authorization", authorization)
+        return redirected
+
+
+def _remote_url(url: str, token: str | None) -> None:
+    """Restrict authenticated requests to an immutable HF Models revision."""
+    if not isinstance(url, str):
+        raise ValueError("Artifact downloads require an HTTPS URL")
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
+        raise ValueError("Artifact downloads require an HTTPS URL without embedded credentials")
+    if token is not None and (not isinstance(token, str) or not re.fullmatch(r"[!-~]{1,4096}", token)):
+        raise ValueError("The artifact access token must be nonempty printable ASCII without whitespace")
+    is_hf = parsed.hostname == "huggingface.co" or parsed.hostname.endswith(".huggingface.co")
+    if token is not None or is_hf:
+        try:
+            valid_port = parsed.port in (None, 443)
+        except ValueError:
+            valid_port = False
+        identifier = r"[A-Za-z0-9][A-Za-z0-9_.-]{0,95}"
+        pinned = rf"/{identifier}/{identifier}/resolve/[0-9a-f]{{40}}/[A-Za-z0-9][A-Za-z0-9_.-]*"
+        if (parsed.hostname != "huggingface.co" or not valid_port or parsed.query or parsed.fragment
+                or not re.fullmatch(pinned, parsed.path)):
+            raise ValueError("Hugging Face artifacts require a canonical Models URL pinned to a 40-character commit")
+
+
+def fetch_bundle(url: str, destination: Path | str, expected_sha256: str, *,
+                 token: str | None = None) -> dict:
     """Explicit HTTPS download anchored to an independently supplied digest.
 
     The caller decides when to fetch; inference never invokes this function.
     Existing bundles are immutable and network failures publish no destination.
+    A token is accepted only for a canonical, commit-pinned HF Models URL. It
+    stays on the canonical HTTPS Hub origin and never enters error messages.
     """
-    parsed = urlparse(url)
-    if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
-        raise ValueError("Artifact downloads require an HTTPS URL without embedded credentials")
+    _remote_url(url, token)
     if not re.fullmatch(r"[0-9a-f]{64}", expected_sha256):
         raise ValueError("A trusted SHA256 is required before downloading")
     target = Path(destination).absolute()
@@ -232,13 +279,25 @@ def fetch_bundle(url: str, destination: Path | str, expected_sha256: str) -> dic
     with tempfile.TemporaryDirectory(prefix=".fetch-", dir=target.parent) as temporary:
         archive = Path(temporary) / "bundle.zip"
         request = Request(url, headers={"User-Agent": "BrentForecast/1.0"})
-        with urlopen(request, timeout=30) as response, archive.open("xb") as output:
-            if urlparse(response.geturl()).scheme != "https":
-                raise ValueError("Artifact redirects must retain HTTPS")
-            total = 0
-            while chunk := response.read(1024 * 1024):
-                total += len(chunk)
-                if total > LIMIT:
-                    raise ValueError("Artifact download exceeds the size limit")
-                output.write(chunk)
+        if token is not None:
+            # urllib copies ordinary headers to redirects, including CDN hosts.
+            # Only the safe handler may reattach it to the same HTTPS Hub origin.
+            request.add_unredirected_header("Authorization", f"Bearer {token}")
+            opener = build_opener(_HttpsArtifactRedirects()).open
+        else:
+            # Keep the public-fetch API patchable for existing offline tests.
+            opener = urlopen
+        try:
+            with opener(request, timeout=30) as response, archive.open("xb") as output:
+                if urlparse(response.geturl()).scheme != "https":
+                    raise ValueError("Artifact redirects must retain HTTPS")
+                total = 0
+                while chunk := response.read(1024 * 1024):
+                    total += len(chunk)
+                    if total > LIMIT:
+                        raise ValueError("Artifact download exceeds the size limit")
+                    output.write(chunk)
+        except (OSError, HTTPException):
+            # HTTP errors or signed CDN URLs may contain sensitive information.
+            raise ValueError("Remote artifact download failed; existing resources were preserved") from None
         return install_bundle(archive, target, expected_sha256)

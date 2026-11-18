@@ -322,7 +322,7 @@ def evaluation(data):
             elif experiment == "smoke":
                 st.caption("MSE normalizado. Prueba inicial de tres épocas; la curva de validación corresponde al bloque exterior de desarrollo, sin selección de época.")
             else:
-                st.caption("MSE normalizado de entrenamiento y validación interior. Early Stopping conserva la época de menor error interior.")
+                st.caption("MSE normalizado de entrenamiento y validación interior. Early Stopping conserva la época de menor error interior entre las épocas optimizadas; la época 0 solo se registró como diagnóstico.")
             st.caption("Época 0: evaluación inicial, antes de actualizar pesos. Cada época posterior representa una pasada de optimización por entrenamiento.")
             if model == "RNN" and variant == "D":
                 st.caption("RNN-D optimiza SmoothL1; la curva muestra MSE normalizado de diagnóstico para mantener una escala de comparación común.")
@@ -401,11 +401,16 @@ def methodology(data):
     st.html('<div class="tensor-flow"><span><b>Entrada</b> 60 × 20</span><span class="arrow">→</span><span><b>Memoria</b> 32 unidades</span><span class="arrow">→</span><span><b>Salida</b> 3 cambios de precio</span><span class="arrow">→</span><span><b>Reconstrucción</b> USD/barril</span></div>')
     for column, (model, name, text) in zip(st.columns(3), [("rnn", "RNN · memoria simple", "Actualiza un estado que resume la secuencia. Es la arquitectura más pequeña: 1.827 parámetros."), ("lstm", "LSTM · memoria regulada", "Usa compuertas y una memoria separada para conservar información. 7.011 parámetros; LSTM-B/42 se seleccionó antes de test."), ("gru", "GRU · estructura compacta", "Regula qué información conserva o renueva con menos parámetros que LSTM: 5.283.")]):
         with column: st.html(f'<div class="panel {model}"><h3>{escape(name)}</h3><p>{escape(text)}</p></div>')
+    with st.expander("Entrenamientos acreditados", expanded=False):
+        st.write("Los registros conservan 204 ajustes principales y tres repeticiones adicionales de reproducibilidad: al menos 207 entrenamientos y 1.481 épocas de optimización acreditadas.")
+        st.table(pd.DataFrame({"Etapa": ["Prueba inicial", "Optimización A/B", "Mejoras C/D", "Evaluación final", "Repeticiones de reproducibilidad"], "Ajustes": [18, 72, 60, 54, 3], "Épocas": [54, 623, 571, 216, 17]}))
+        st.caption("Cada ajuste inicia una red y aprende conjuntamente los tres horizontes; no son 207 modelos por horizonte ni una única red entrenada durante 1.481 épocas. La época 0 es un diagnóstico inicial y no cuenta como optimización. Ejecución documentada en CPU, con semillas 42, 123 y 2026; la prueba inicial usa 42.")
     left, right = st.columns(2)
     with left:
         st.subheader("Separación temporal")
         st.table(pd.DataFrame({"Conjunto": ["Desarrollo", "Calibración", "Test"], "Orígenes": ["2015 · 2017 · 2019", "2021–2022", "2024"], "Uso": ["Elegir configuraciones", "Calibrar intervalos", "Evaluar política congelada"]}))
-        st.write("La validación avanza en el tiempo y amplía el historial con reajustes semestrales. En desarrollo, Early Stopping detiene el entrenamiento si la validación interior deja de mejorar. Las épocas finales se fijaron antes de test: RNN 4, LSTM 3 y GRU 5.")
+        st.write("La validación avanza en el tiempo y amplía el historial con reajustes semestrales. En desarrollo, Early Stopping usa un máximo de 20 épocas y paciencia de 5. Las épocas finales se fijaron antes de calibración y test: RNN 4, LSTM 3 y GRU 5.")
+        st.caption("Para cada arquitectura se tomó la mediana de sus 18 mejores épocas interiores (seis bloques de desarrollo × tres semillas) y se redondeó hacia arriba: RNN-D 3,5 → 4; LSTM-B 3 → 3; GRU-C 5 → 5. Los reajustes finales usan ese número fijo sobre el historial permitido, sin elegir épocas con calibración ni test. Trasladar esta regla al historial ampliado es una limitación del diseño.")
     with right:
         st.subheader("Qué aprende la red")
         st.code("Precio futuro = Brent conocido + cambio predicho", language=None)
@@ -417,5 +422,5 @@ def methodology(data):
         st.markdown("- Etiquetas de los tres horizontes maduras al corte de cada reajuste.\n- Imputación y escalado ajustados solo con filas permitidas de entrenamiento.\n- Ninguna muestra con origen en test entra en entrenamiento.\n- Calendario lunes–viernes sin comprimir festivos; se excluyen etiquetas no observadas.\n- La selección de red y cuantiles no cambia al observar los resultados de test.")
         st.caption("Test online: un reajuste posterior puede reutilizar precios ya publicados como etiquetas de orígenes antiguos. No es un holdout estático de todos los precios.")
     st.subheader("Conclusiones y límites")
-    st.write("Persistencia es la referencia con menor error medio en test. Las redes presentan sesgo y variación entre semillas, especialmente a un año. La aplicación permite examinar esa evidencia, sin afirmar una ventaja predictiva inexistente.")
+    st.write("Persistencia es la referencia con menor error medio en los tres horizontes de test, al promediar las tres semillas de cada red. Las redes presentan sesgo y variación entre semillas, especialmente a 252 días. LSTM-B fue la mejor red en desarrollo; esa elección no la convierte en el mejor predictor global. La aplicación permite examinar los resultados negativos y los periodos favorables, sin afirmar una ventaja predictiva inexistente.")
     st.caption("Los retardos de publicación son supuestos; no se garantiza que cada dato revisado existiera en su fecha histórica. La cesta OPEP quedó ausente por un HTTP 403. Los pesos corresponden al reajuste lógico de julio de 2024; no se registró la fecha real de ejecución del entrenamiento. Actualizar datos no modifica pesos ni cuantiles.")

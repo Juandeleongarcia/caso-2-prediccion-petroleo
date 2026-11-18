@@ -16,7 +16,7 @@ import streamlit as st
 import oil_forecast.app_pages as pages
 from oil_forecast.acquisition import sha256
 from oil_forecast.app_data import load_app_data, load_services, latest_market
-from oil_forecast.artifacts import fetch_bundle, install_bundle, verify_bundle
+from oil_forecast.deployment import prepare_application_resources, verify_registered_manifest
 from oil_forecast.refresh import RefreshController
 
 st.set_page_config(page_title="Brent Forecast | Energy Intelligence", page_icon="◈", layout="wide",
@@ -24,14 +24,28 @@ st.set_page_config(page_title="Brent Forecast | Energy Intelligence", page_icon=
 st.html(f"<style>{(ROOT / 'src/oil_forecast/app.css').read_text(encoding='utf-8')}</style>")
 
 PAGES = ["Visión general", "Predicción", "Comparación", "Evaluación", "Metodología"]
-bundle = Path(os.environ.get("BRENT_BUNDLE_DIR", ROOT / "artifacts/local/brent-frozen-v1"))
-dashboard = Path(os.environ.get("BRENT_DASHBOARD_DIR", ROOT / "artifacts/local/brent-dashboard-v1"))
 academic = ROOT / "artifacts/derived/brent-academic-v1"
-live_directory = Path(os.environ.get("BRENT_LIVE_DIR", ROOT / "data/live"))
 app_config = json.loads((ROOT / "configs/app.json").read_text(encoding="utf-8"))
 source_config = json.loads((ROOT / "configs/data.json").read_text(encoding="utf-8"))
-refresh_hours = float(os.environ.get("BRENT_REFRESH_HOURS", app_config["refresh_interval_hours"]))
-automatic_default = os.environ.get("BRENT_AUTO_REFRESH", str(app_config["auto_refresh"])).lower() in {"true", "1", "yes"}
+
+
+def setting(name):
+    value = os.environ.get(name)
+    if value is not None:
+        return value
+    try:
+        return st.secrets.get(name)
+    except (FileNotFoundError, st.errors.StreamlitSecretNotFoundError):
+        return None
+
+
+bundle = Path(setting("BRENT_BUNDLE_DIR") or ROOT / "artifacts/local/brent-frozen-v1")
+dashboard = Path(setting("BRENT_DASHBOARD_DIR") or ROOT / "artifacts/local/brent-dashboard-v1")
+live_directory = Path(setting("BRENT_LIVE_DIR") or ROOT / "data/live")
+configured_hours = setting("BRENT_REFRESH_HOURS")
+refresh_hours = float(app_config["refresh_interval_hours"] if configured_hours is None else configured_hours)
+configured_automatic = setting("BRENT_AUTO_REFRESH")
+automatic_default = str(app_config["auto_refresh"] if configured_automatic is None else configured_automatic).lower() in {"true", "1", "yes"}
 
 
 def signature(directory):
@@ -41,11 +55,17 @@ def signature(directory):
 
 @st.cache_data(show_spinner=False)
 def cached_data(bundle_path, evidence_path, academic_path, revision):
+    for folder, registry_file in ((bundle_path, "serving_bundle.json"), (evidence_path, "dashboard_bundle.json")):
+        if folder:
+            registry = json.loads((ROOT / "configs" / registry_file).read_text(encoding="utf-8"))
+            verify_registered_manifest(folder, registry["manifest_sha256"])
     return load_app_data(Path(bundle_path), Path(evidence_path) if evidence_path else None, Path(academic_path))
 
 
 @st.cache_resource(show_spinner=False)
 def cached_services(bundle_path, revision):
+    registry = json.loads((ROOT / "configs/serving_bundle.json").read_text(encoding="utf-8"))
+    verify_registered_manifest(bundle_path, registry["manifest_sha256"])
     return load_services(Path(bundle_path))
 
 
@@ -96,34 +116,13 @@ def update_panel(services, fallback_updated_at):
         st.rerun()
 
 
-def setting(name):
-    value = os.environ.get(name)
-    if value:
-        return value
-    try:
-        return st.secrets.get(name)
-    except (FileNotFoundError, st.errors.StreamlitSecretNotFoundError):
-        return None
-
-
 def prepare_resources():
-    for name, directory, registry_file, url_name in [
-        ("inferencia", bundle, "serving_bundle.json", "BRENT_INFERENCE_URL"),
-        ("evaluación", dashboard, "dashboard_bundle.json", "BRENT_EVIDENCE_URL")]:
-        if directory.exists():
-            verify_bundle(directory)
-            continue
-        registry = json.loads((ROOT / "configs" / registry_file).read_text(encoding="utf-8"))
-        archive = ROOT / registry["archive"]["local_path"]
-        if archive.exists():
-            install_bundle(archive, directory, registry["archive"]["sha256"])
-        else:
-            url = setting(url_name) or registry["archive"].get("published_url")
-            if not url:
-                raise FileNotFoundError(f"No hay paquete local ni origen remoto configurado para {name}.")
-            fetch_bundle(url, directory, registry["archive"]["sha256"])
+    settings = {key: setting(key) for key in (
+        "BRENT_INFERENCE_URL", "BRENT_EVIDENCE_URL", "BRENT_HF_REPO_ID", "BRENT_HF_REVISION", "HF_TOKEN")}
+    prepare_application_resources(ROOT, bundle, dashboard, settings)
     cached_data.clear()
     cached_services.clear()
+    st.session_state.pop("resource_bootstrap_error", None)
 
 
 with st.sidebar:
@@ -132,7 +131,7 @@ with st.sidebar:
     st.divider()
     st.html('<div class="eyebrow">SISTEMA PREDICTIVO</div><span class="badge">CPU · Semilla 42</span>')
     st.caption("Persistencia: mejor resultado medio en test. LSTM-B/42: red elegida antes de test.")
-    st.html('<span class="badge badge-amber">Pesos congelados · JUL 2024</span>')
+    st.html('<span class="badge badge-amber">Reajuste lógico · JUL 2024</span>')
     with st.expander("Disponibilidad de recursos"):
         st.caption("Con los datos y modelos instalados puedes navegar sin conexión. Este botón verifica su integridad o prepara los recursos disponibles.")
         if st.button("Preparar o verificar recursos", key="prepare_resources", width="stretch"):
@@ -141,8 +140,23 @@ with st.sidebar:
                     prepare_resources()
                 st.success("Recursos verificados.")
                 st.rerun()
-            except Exception as failure:
-                st.error(str(failure))
+            except Exception:
+                st.error("No se han podido preparar los recursos. Comprueba la configuración y los permisos del servidor.")
+
+# Opt-in on the hosting platform. Retry once per session; the manual action can
+# retry later without repeated network calls on navigation or failed reruns.
+if (str(setting("BRENT_AUTO_PREPARE")).lower() in {"true", "1", "yes"}
+        and (not bundle.exists() or not dashboard.exists())
+        and not st.session_state.get("resource_bootstrap_attempted", False)):
+    st.session_state["resource_bootstrap_attempted"] = True
+    try:
+        with st.spinner("Preparando recursos verificados…"):
+            prepare_resources()
+    except (OSError, ValueError, KeyError):
+        st.session_state["resource_bootstrap_error"] = (
+            "Los recursos remotos aún no están disponibles. Puedes reintentar desde el menú lateral.")
+if st.session_state.get("resource_bootstrap_error"):
+    st.warning(st.session_state["resource_bootstrap_error"])
 
 st.html('<div class="topline"><div class="identity">Brent Forecast | Energy Intelligence</div><span class="badge">ESTUDIO ACADÉMICO · UAX</span></div>')
 st.caption("Predicción del precio del petróleo mediante redes neuronales recurrentes.")

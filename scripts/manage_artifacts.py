@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import os
 from pathlib import Path
 import sys
 
@@ -31,6 +32,8 @@ def main() -> None:
     fetch.add_argument("--url", required=True)
     fetch.add_argument("--registry", type=Path, required=True)
     fetch.add_argument("--destination", type=Path, required=True)
+    fetch.add_argument("--use-hf-token", action="store_true",
+                       help="Read HF_TOKEN from the environment for a private, commit-pinned Models URL")
     args = parser.parse_args()
     if args.command == "build":
         result = build_bundle(args.source, args.processed, args.output, args.archive)
@@ -46,7 +49,10 @@ def main() -> None:
         registry = json.loads(args.registry.read_text(encoding="utf-8"))
         if registry.get("schema_version") != 1 or registry.get("bundle_id") not in {"brent-frozen-v1", "brent-dashboard-v1"}:
             raise ValueError("Unrecognized trusted artifact registry")
-        result = fetch_bundle(args.url, args.destination, registry["archive"]["sha256"])
+        token = os.environ.get("HF_TOKEN") if args.use_hf_token else None
+        if args.use_hf_token and not token:
+            raise ValueError("Configure HF_TOKEN in the environment before requesting private artifacts")
+        result = fetch_bundle(args.url, args.destination, registry["archive"]["sha256"], token=token)
     else:
         result = verify_bundle(args.directory)
     print(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False))

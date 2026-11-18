@@ -55,9 +55,10 @@ class PortableArtifacts(unittest.TestCase):
         shutil.copyfile(self.archive, clone / "bundle.zip")
         (clone / "registry.json").write_text(json.dumps({"schema_version": 1, "bundle_id": "brent-frozen-v1",
             "archive": {"sha256": self.built["archive_sha256"]}}), encoding="utf-8")
-        command = [sys.executable, "-I", "-B", "-W", "error", "scripts/manage_artifacts.py", "install",
+        command = [sys.executable, "-I", "-X", "utf8", "-B", "-W", "error", "scripts/manage_artifacts.py", "install",
                    "--archive", "bundle.zip", "--registry", "registry.json", "--destination", "artifacts/frozen"]
-        installed_cli = subprocess.run(command, cwd=clone, capture_output=True, text=True, check=True)
+        installed_cli = subprocess.run(command, cwd=clone, capture_output=True, text=True,
+                                       encoding="utf-8", check=True)
         self.assertEqual(json.loads(installed_cli.stdout)["forecast"], installed["forecast"])
         program = """
 import json,sys
@@ -75,8 +76,8 @@ uncertainty.fit_intervals=acquisition.download_snapshot=acquisition.urlopen=urll
 assert not Path('data').exists() and not Path('experiments').exists()
 print(json.dumps(verify_bundle(Path('artifacts/frozen'))['forecast']))
 """
-        process = subprocess.run([sys.executable, "-I", "-B", "-W", "error", "-c", program],
-                                 cwd=clone, capture_output=True, text=True, check=True)
+        process = subprocess.run([sys.executable, "-I", "-X", "utf8", "-B", "-W", "error", "-c", program],
+                                 cwd=clone, capture_output=True, text=True, encoding="utf-8", check=True)
         self.assertEqual(json.loads(process.stdout), installed["forecast"])
 
     def test_second_build_is_identical_and_existing_destinations_are_preserved(self):
