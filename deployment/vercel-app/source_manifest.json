@@ -35,15 +35,17 @@
     "web/frontend/vendor/plotly.min.js": "3b6e15d45dbb7fca5bd2094291e961ddc5472cd887009e6009a56dab668d721f",
     "web/vercel_runtime.py": "50f93155478828595bb0d1d057740e62d44cfbb2c0febf987723e4e9def5d44b",
     "api/forecast.py": "4f02f361eeac13ee34df3f8fdf1a0419e120e819b49c7a5ef9bc23aa6445d0b2",
-    "requirements.txt": "70c982229996d2f4b9bf94f042ea331173d6104347b6752ae7d83d8c34e56f06",
+    "requirements.txt": "41ed6fb55f9cdb895f4ce2fef99fc1d1a573811e6df7fb212fcb4a109e2fbaf5",
     "vercel.json": "fb0cee35fe1c9ebed408e650121de7b12f99ab89ffbebc21a6284f68b12390f7",
     ".python-version": "02e735b3dfe1c32833eb550b7ff8ffa17f5f2bc3fa1e7bae61a8f5a3883ce398",
     "build.mjs": "0116bfe12e6087aa5f3e2e2968e4cc9254e0d31191b51a4a3ef26f370e0b0985",
     "verify_runtime.py": "1e2117bb044327941cdd8247e8ac2a7f31aaddf6c4ec154ba2da91b082212961",
-    "Dockerfile.check": "78fd58e0a882912bc3b4e81981078e9c499e17fef97442840ec3b6f03095e801",
+    "Dockerfile.check": "c3257e7d58b7f27e938dd7c6c0b3577d8f6c281f5c3232c2a36147b7744d5e0b",
     "constraints-linux.txt": "cdf863e5d2257ff57241798402aff22f743b824996e55fbc332160086d7b09b3",
     ".vercelignore": "eb5aee50fdcf46a1e442116388a150ddb56af90d1c98ca8baf193e2cff27e90c",
     ".dockerignore": "8ea31d382785d819a744a61023172dd6b982256a2f9de3b3e53583c2629c9014",
-    "README.md": "54a15dbc3744a0fa4b715df3bcfc1cd7431fe622233c4bb26d8fd63b67ea6c63"
+    "README.md": "eb33446878a569cb0eb1d26c7da5f0775afea50c3d6d40c71f0c2fa09f4c9cdd",
+    "pyproject.toml": "bf8277c73fc89a2b61896f9dc9208af19c011c3f1831c3ef974a52215a751ee2",
+    "uv.lock": "a8be392a87161af5e2c7d5e0c95a1765a007cad01dc9829894dc72c75ca16bf7"
   }
 }

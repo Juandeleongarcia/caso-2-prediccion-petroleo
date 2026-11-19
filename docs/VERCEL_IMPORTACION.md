@@ -14,9 +14,9 @@ Actualizar la pantalla después del push y seleccionar manualmente:
 | Framework Preset | **Other**, aunque se detecte Python |
 | Build Command | **node build.mjs** |
 | Output Directory | **public** |
-| Install Command | Automático/sin override; Python Functions instala requirements.txt |
+| Install Command | Automático/sin override; dependencias Python en pyproject.toml + uv.lock y requirements.txt compatible |
 | Include source files outside Root Directory | Desactivado: el paquete es autónomo |
-| Python | 3.13, fijado en .python-version |
+| Python | 3.13, fijado en .python-version y >=3.13,<3.14 en pyproject.toml del paquete |
 | Plan | Hobby; no activar Pro/trial ni recursos de pago |
 
 No elegir deployment/public_app, app, web/frontend, deployment/vercel ni la raíz científica. La carpeta deployment/vercel es solo plantilla. vercel.json habilita Fluid y limita la función a300s. Los assets grandes de Plotly se sirven por CDN, no por la API.
@@ -59,5 +59,17 @@ Las fuentes se conservan en web/, src/oil_forecast/ y deployment/vercel/. script
 La comparación de pruebas y recursos de las fases previas está en web/VERCEL_LARGE_FUNCTIONS.md. Las restricciones de artefactos y derechos se mantienen aunque el repositorio de modelos sea privado.
 
 ## Verificación de esta integración
+
+### Corrección del instalador de Vercel
+
+Se reprodujo el conflicto torch/filelock con uv0.13.9 y el requirements anterior. Su causa es la prioridad del índice CPU bajo first-index: ocultaba filelock de PyPI. Se conserva torch==2.15.0+cpu mediante su wheel oficial Linux CPython3.13 con el SHA256 original; las demás dependencias se obtienen de PyPI. No se usa unsafe-best-match ni se modifican los pesos. Se añaden pyproject.toml con Python >=3.13,<3.14 y uv.lock para fijar también el instalador basado en proyectos. El motivo exacto por el que el build anterior ignoró .python-version requiere el log completo; ahora ambos mecanismos declaran 3.13.
+
+La instalación cruzada de los 34 paquetes Linux funciona. No acredita imports ni consumo de memoria en Linux: este equipo no tiene Docker/WSL operativo. Dockerfile.check conserva esa comprobación pendiente. Para el siguiente intento, seleccionar el commit corregido, mantener la configuración de la tabla y reconstruir sin reutilizar la caché anterior. Confirmar CPython3.13 en los logs; no desplegar de nuevo el commit fallido. No se requiere ninguna credencial adicional para esta corrección del instalador.
+
+La corrección supera **237/237 pruebas Python (94,494 s)**, **6/6 JavaScript**, pip check y git diff --check. Incluye build CDN, arranque WSGI y paridad con Streamlit de tres redes y persistencia en tres horizontes. Los 163 archivos protegidos, 92 entradas del inventario y 21 archivos de presentación conservan sus hashes. El snapshot importable contiene 45 archivos y 44 hashes de payload, sin artefactos privados. Las 34 versiones instaladas coinciden con uv.lock; se comprobaron 90 bibliotecas ELF y uv sync --locked --dry-run. Los logs permanecen en artifacts/local/vercel-dependency-fix, excluido de Git.
+
+Referencias oficiales: [selección de Python en Vercel](https://vercel.com/docs/functions/runtimes/python/python-version) y [prioridad de índices de uv](https://docs.astral.sh/uv/pip/compatibility/#packages-that-exist-on-multiple-indexes).
+
+Las cifras siguientes pertenecen a la integración previa.
 
 236/236 pruebas Python (101,212 s) y 6/6 JavaScript superadas. El nuevo test comprueba que el snapshot coincide con las fuentes normalizadas y que sus 42 hashes y la desactivación de despliegues Git se conservan. Los 163 archivos protegidos, 92 entradas del inventario y 21 archivos de presentación mantienen sus SHA256. No hay nuevos entrenamientos ni cambios en los experimentos. Se publica solo código y documentación segura; los pesos, ZIP, históricos y credenciales continúan excluidos.

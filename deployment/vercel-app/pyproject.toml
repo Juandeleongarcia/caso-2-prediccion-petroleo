@@ -1,0 +1,51 @@
+[project]
+name = "brent-forecast-vercel"
+version = "0.1.0"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+  "torch @ https://download.pytorch.org/whl/cpu/torch-2.15.0%2Bcpu-cp313-cp313-manylinux_2_28_x86_64.whl#sha256=0f6f69701b2d38ddc412364dfb92e2e13e74960d33fa3573b4930ced626e81c7",
+  "numpy==2.5.4",
+  "pandas==3.1.0",
+  "plotly==7.1.0",
+  "yfinance==1.8.0"
+]
+
+[tool.uv]
+package = false
+environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
+constraint-dependencies = [
+  "Jinja2==3.1.6",
+  "MarkupSafe==3.0.4",
+  "beautifulsoup4==4.15.0",
+  "certifi==2026.10.23",
+  "cffi==2.1.1",
+  "charset-normalizer==3.5.2",
+  "curl_cffi==0.17.0",
+  "filelock==4.2.12",
+  "fsspec==2026.9.0",
+  "idna==3.20",
+  "lxml==6.1.3",
+  "mpmath==1.3.0",
+  "narwhals==2.29.0",
+  "networkx==3.7",
+  "numpy==2.5.4",
+  "packaging==26.3",
+  "pandas==3.1.0",
+  "peewee==4.5.3",
+  "platformdirs==4.14.7",
+  "plotly==7.1.0",
+  "protobuf==7.36.2",
+  "pycparser==3.12",
+  "python-dateutil==4.0.0",
+  "pytz==2026.6",
+  "requests==2.34.2",
+  "setuptools==84.2.1",
+  "soupsieve==4.1.2",
+  "sympy==1.14.0",
+  "torch==2.15.0+cpu",
+  "typing_extensions==4.16.0",
+  "tzdata==2026.6",
+  "urllib3==2.8.0",
+  "websockets==17.4",
+  "yfinance==1.8.0"
+]

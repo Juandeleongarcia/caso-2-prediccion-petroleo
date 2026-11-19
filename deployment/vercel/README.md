@@ -28,7 +28,11 @@ Las carpetas de modelos, frozen, dashboard y live se fijan bajo el runtime tempo
 
 ## Verificación y límites
 
-Las cinco dependencias directas conservan sus versiones científicas. constraints-linux.txt fija las versiones encontradas por resolución cruzada de wheels manylinux/Python3.13. Esa resolución puede evaluar marcadores del anfitrión y no acredita instalación Linux. Validar con Dockerfile.check, pip check e inferencia; no sustituir PyTorch para reducir tamaño.
+Las cinco dependencias directas conservan sus versiones científicas. Python queda limitado a >=3.13,<3.14 en pyproject.toml, además de .python-version=3.13. requirements.txt mantiene compatibilidad con el instalador uv pip; pyproject.toml y uv.lock cubren el instalador uv sync. Las restricciones se mantienen sincronizadas mediante pruebas.
+
+PyTorch CPU se descarga por su URL oficial exacta de CPython3.13/manylinux x86_64 con SHA256, idéntico al registrado en poetry.lock científico. El resto procede de PyPI. No se utiliza un extra-index global: con la estrategia first-index de uv, el índice CPU ocultaba filelock==4.2.12 de PyPI e impedía resolver. No se cambia PyTorch ni se desactiva la protección contra confusión de dependencias.
+
+Se ha reproducido ese fallo con uv0.13.9 y comprobado la instalación cruzada de los 34 paquetes Linux en una carpeta aislada. No equivale a ejecutar/importar en Linux. Dockerfile.check prepara esa comprobación nativa con el mismo uv; necesita Docker o un host Linux y los artefactos autorizados. La aceptación final del build de Vercel sigue pendiente.
 
 En la raíz generada, definir VERCEL_SUPPORT_LARGE_FUNCTIONS=1 y ejecutar `node build.mjs` comprueba el frontend sin publicación. `verify_runtime.py --output RUTA_NUEVA.json` comprueba inferencia/recursos sin consultar proveedores; `--require-linux` rechaza una ejecución Windows como prueba Linux. Necesita variables y artefactos autorizados. Registra arranque y, en Linux, RSS; no certifica una Preview de Vercel ni toda la concurrencia.
 

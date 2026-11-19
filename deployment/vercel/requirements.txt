@@ -1,9 +1,10 @@
-# Exact direct versions from the frozen scientific environment; independent deployment environment.
---extra-index-url https://download.pytorch.org/whl/cpu
+# Linux x86_64 CPython 3.13 deployment only; scientific environment unchanged.
+# Direct official CPU wheel avoids uv first-index shadowing of PyPI dependencies.
+--index-url https://pypi.org/simple
 -c constraints-linux.txt
-torch==2.15.0+cpu
+
+torch @ https://download.pytorch.org/whl/cpu/torch-2.15.0%2Bcpu-cp313-cp313-manylinux_2_28_x86_64.whl#sha256=0f6f69701b2d38ddc412364dfb92e2e13e74960d33fa3573b4930ced626e81c7
 numpy==2.5.4
 pandas==3.1.0
 plotly==7.1.0
-# Needed only by authorized live refreshes, retained to preserve that function.
 yfinance==1.8.0

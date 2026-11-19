@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import tomllib
 import unittest
 from unittest.mock import patch
 
@@ -27,6 +28,35 @@ def request(app,endpoint,query='',method='GET'):
 
 
 class VercelPackage(unittest.TestCase):
+    def test_linux_dependencies_pin_python_and_keep_torch_hash_without_index_shadowing(self):
+        from packaging.specifiers import SpecifierSet
+        folder=ROOT/'deployment/vercel'
+        project=tomllib.loads((folder/'pyproject.toml').read_text(encoding='utf-8'))
+        versions=SpecifierSet(project['project']['requires-python'])
+        self.assertIn('3.13.7',versions)
+        self.assertNotIn('3.14.8',versions)
+        self.assertEqual((folder/'.python-version').read_text().strip(),'3.13')
+        lines=[line.strip() for line in (folder/'requirements.txt').read_text().splitlines()
+               if line.strip() and not line.startswith('#')]
+        self.assertIn('--index-url https://pypi.org/simple',lines)
+        self.assertFalse(any('extra-index' in line or 'unsafe-best-match' in line for line in lines))
+        self.assertEqual([line for line in lines if not line.startswith('-')],project['project']['dependencies'])
+        constraints=[line.strip() for line in (folder/'constraints-linux.txt').read_text().splitlines()
+                     if line.strip() and not line.startswith('#')]
+        self.assertEqual(constraints,project['tool']['uv']['constraint-dependencies'])
+        scientific=tomllib.loads((ROOT/'poetry.lock').read_text(encoding='utf-8'))
+        torch=next(package for package in scientific['package'] if package['name']=='torch')
+        wheel=next(item for item in torch['files'] if item['file'].endswith('cp313-cp313-manylinux_2_28_x86_64.whl'))
+        direct=project['project']['dependencies'][0]
+        self.assertIn(wheel['file'].replace('+','%2B'),direct)
+        self.assertIn(wheel['hash'].replace('sha256:','sha256='),direct)
+        lock=tomllib.loads((folder/'uv.lock').read_text(encoding='utf-8'))
+        self.assertEqual(lock['requires-python'],'==3.13.*')
+        locked={p['name']:p for p in lock['package']}
+        self.assertEqual(locked['torch']['version'],torch['version'])
+        self.assertEqual(locked['filelock']['version'],'4.2.12')
+        self.assertEqual(locked['filelock']['source'],{'registry':'https://pypi.org/simple'})
+
     def test_git_import_snapshot_tracks_current_sources_and_has_automatic_deploys_disabled(self):
         folder=ROOT/'deployment/vercel-app'
         manifest=json.loads((folder/'source_manifest.json').read_text(encoding='utf-8'))
@@ -58,7 +88,8 @@ class VercelPackage(unittest.TestCase):
             for name in ['src/oil_forecast/models.py','src/oil_forecast/preprocessing.py','web/backend.py']:
                 self.assertEqual((target/name).read_bytes(),(ROOT/name).read_bytes().replace(b'\r\n',b'\n'))
             self.assertFalse((target/'poetry.lock').exists())
-            self.assertFalse((target/'pyproject.toml').exists())
+            config=tomllib.loads((target/'pyproject.toml').read_text(encoding='utf-8'))
+            self.assertEqual(config['project']['requires-python'],'>=3.13,<3.14')
             with self.assertRaises(ValueError):prepare(target)
 
     def test_fluid_duration_routes_and_cdn_build_use_same_origin_without_tokens(self):
