@@ -26,6 +26,7 @@ from oil_forecast.insights import explain_forecast, cost_scenarios, event_points
 from oil_forecast.academic import error_periods, detail_cases
 from oil_forecast.deployment import verify_registered_manifest
 from oil_forecast.refresh import RefreshController
+from oil_forecast.live_hub import HubReader, LiveHubController
 
 MODELS = ['persistence', 'RNN', 'LSTM', 'GRU']
 FILES = {'checkpoints.pt', 'protocol.json', 'intervals.json', 'load_models.py', 'README.md'}
@@ -126,11 +127,31 @@ class Study:
         self.config = json.loads((ROOT / 'configs/data.json').read_text(encoding='utf-8'))
         self.events = json.loads((ROOT / 'configs/economic_events.json').read_text(encoding='utf-8'))['events']
         self.controller = RefreshController(Path(os.environ.get('BRENT_LIVE_DIR', ROOT / 'data/live')))
+        self.published = None
+        if os.environ.get('BRENT_LIVE_ENABLED') == '1':
+            if os.environ.get('BRENT_LIVE_ACCESS_AUTHORIZED') != '1':
+                raise ValueError('Remote live data requires separate acquisition/distribution authorization')
+            self.published = LiveHubController(self.controller.directory / 'published',
+                HubReader(os.environ.get('BRENT_LIVE_REPO_ID', os.environ.get('BRENT_HF_REPO_ID')),
+                          os.environ.get('HF_TOKEN')), os.environ.get('BRENT_MANIFEST_SHA256'),
+                interval_seconds=int(os.environ.get('BRENT_LIVE_POLL_SECONDS', '300')),
+                minimum_updated_at=self.data['protocol']['data_updated_at'])
         self.refresh_status = {'status': 'disabled'}
         self.updated = self.data['protocol']['data_updated_at']
         self.refresh(False, allow_network=initial_refresh_network)
 
     def refresh(self, force=False, allow_network=True):
+        if self.published is not None:
+            def validate_live(window):
+                for service in self.services.values():
+                    service.predict(window, data_updated_at=pd.Timestamp.now(tz='UTC'))
+            fresh,status=self.published.check(self.config,validate_live)
+            if fresh is not None:
+                self.data['history'],self.data['window']=fresh['history'],fresh['window']
+                self.updated=fresh['protocol']['data_updated_at']
+                self.data['protocol']=self.data['protocol'] | {'data_updated_at':self.updated}
+            self.refresh_status=status
+            return {'status':status.get('status'),'data_updated_at':self.updated,'weights_updated':False}
         enabled = allow_network and os.environ.get('BRENT_ALLOW_PROVIDER_ACCESS') == '1'
         def validate(window):
             for service in self.services.values():
@@ -146,6 +167,7 @@ class Study:
 
     def response(self, endpoint, q):
         with self.lock:
+            if self.published is not None:self.refresh(False)
             return self._response(endpoint, q)
 
     def _response(self, endpoint, q):
@@ -157,13 +179,15 @@ class Study:
                 'model_refit_at': '2024-07-01T06:00:00+00:00', 'actual_training_execution_at': None,
                 'data_updated_at': self.updated, 'refresh': self.refresh_status,
                 'can_refresh': os.environ.get('BRENT_ALLOW_PROVIDER_ACCESS') == '1' and os.environ.get('BRENT_PUBLIC_ACCESS_AUTHORIZED') != '1',
-                'automatic_refresh': os.environ.get('BRENT_ALLOW_PROVIDER_ACCESS') == '1'}
+                'automatic_refresh': self.published is not None or os.environ.get('BRENT_ALLOW_PROVIDER_ACCESS') == '1',
+                'data_refresh_mode': 'github_actions' if self.published is not None else 'provider_or_frozen'}
         if endpoint == 'overview':
             period = choose(q, 'period', '1Y', ['1M', '3M', '1Y', '5Y', 'MAX'])
             self.refresh(False)
             forecast = forecast_for_model(self.services, data['window'], 'LSTM', self.updated)
             events = event_points(data['history'], self.events)
             return {'market': latest_market(data['history'], data['protocol']), 'forecast': forecast,
+                'refresh':self.refresh_status,
                 'indicators': records(context_indicators(data['window'])),
                 'events': records(events), 'charts': {'history': chart(history_chart(filter_history(data['history'], period), events=events))}}
         if endpoint == 'archive-origins':

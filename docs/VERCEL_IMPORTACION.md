@@ -1,5 +1,7 @@
 # Importación de Brent Forecast desde GitHub
 
+**Actualización diaria de observaciones:** [ACTUALIZACION_DIARIA.md](ACTUALIZACION_DIARIA.md) describe el nuevo canal live/ autorizado, workflow, secretos, control de revisiones y comprobación en la web. Los pins de modelos y paquetes científicos originales se conservan.
+
 **Plan de cierre vigente:** [PLAN_DESPLIEGUE.md](PLAN_DESPLIEGUE.md). Mantener frontend y PyTorch en Vercel; cerrar recursos/permisos y ejecutar la aceptación antes de plantear otro backend. Las secciones siguientes conservan el diagnóstico y evidencias de las revisiones previas.
 
 ## Auditoría tras configurar Models y subir los ZIP (19/11/2026)

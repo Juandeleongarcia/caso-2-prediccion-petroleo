@@ -189,6 +189,37 @@ class VercelResources(unittest.TestCase):
                     self.assertEqual(body['forecast'][key],expected[key])
         self.assertEqual(request(self.app,'refresh',method='POST')[0],403)
 
+    def test_live_data_requires_separate_authorization_without_affecting_default_mode(self):
+        with patch.dict(os.environ,{'BRENT_LIVE_ENABLED':'1','BRENT_LIVE_ACCESS_AUTHORIZED':'0'}):
+            self.assertEqual(request(self.app,'ready')[0],503)
+        self.assertFalse(self.app.delegate)
+
+    def test_live_data_changes_acquisition_date_not_weights_metrics_or_model_date(self):
+        import pandas as pd
+        from oil_forecast.app_data import load_services,forecast_for_model
+        folder=ROOT/'artifacts/local/brent-frozen-v1'
+        fresh={'window':pd.read_csv(folder/'latest_window.csv'),'history':pd.read_csv(folder/'brent_history.csv'),
+               'protocol':{'data_updated_at':'2026-11-18T09:00:00+00:00'}}
+        status={'status':'current','last_success_at':fresh['protocol']['data_updated_at'],'mode':'github_actions'}
+        original=load_services(folder)
+        before=hashlib.sha256((self.runtime/'brent-frozen-v1/checkpoints.pt').read_bytes()).hexdigest()
+        with patch.dict(os.environ,{'BRENT_LIVE_ENABLED':'1','BRENT_LIVE_ACCESS_AUTHORIZED':'1'}),\
+             patch('web.backend.LiveHubController') as live:
+            live.return_value.check.return_value=(fresh,status)
+            self.assertEqual(request(self.app,'ready')[0],200)
+            code,models=request(self.app,'models')
+            self.assertEqual(models['data_updated_at'],fresh['protocol']['data_updated_at'])
+            self.assertTrue(models['automatic_refresh']);self.assertEqual(models['data_refresh_mode'],'github_actions')
+            for model in ['RNN','LSTM','GRU']:
+                code,result=request(self.app,'predict','model='+model)
+                expected=forecast_for_model(original,fresh['window'],model,fresh['protocol']['data_updated_at'])
+                self.assertEqual(result['forecast']['forecasts'],expected['forecasts'])
+                self.assertEqual(result['forecast']['model_refit_at'],'2024-07-01T06:00:00+00:00')
+            live.return_value.check.return_value=(None,{**status,'status':'failed','last_attempt_at':'2026-11-19T09:00:00+00:00'})
+            self.assertEqual(request(self.app,'predict','model=GRU')[0],200)
+            self.assertEqual(request(self.app,'models')[1]['data_updated_at'],fresh['protocol']['data_updated_at'])
+        self.assertEqual(hashlib.sha256((self.runtime/'brent-frozen-v1/checkpoints.pt').read_bytes()).hexdigest(),before)
+
     def test_empty_runtime_fetches_pinned_original_resources_then_runs_authentic_inference(self):
         # Real original bytes; only HTTPS transport is replaced. No publication or
         # real token: this isolated fixture is not a grant of production rights.

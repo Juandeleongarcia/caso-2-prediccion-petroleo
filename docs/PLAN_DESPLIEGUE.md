@@ -1,5 +1,7 @@
 # Plan de cierre: inferencia real de Brent Forecast
 
+**Ampliación posterior autorizada:** la web ya responde con inferencia HF real. La actualización diaria independiente de pesos se documenta en [ACTUALIZACION_DIARIA.md](ACTUALIZACION_DIARIA.md). La exclusión de Actions en el plan original siguiente correspondía al alcance de aquella fase; la nueva petición la sustituye únicamente para adquisición/publicación de observaciones, sin entrenamiento automático.
+
 Decisión del 19/11/2026. Este documento fija el camino de cierre; la [guía de importación y diagnóstico](VERCEL_IMPORTACION.md) conserva inventarios, hashes, evidencias y el borrador de solicitud de permisos. No se autorizan publicaciones de artefactos ni se activa la exposición pública mediante este plan.
 
 ## Arquitectura elegida

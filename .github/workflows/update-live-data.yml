@@ -1,0 +1,60 @@
+name: Brent daily observations
+
+on:
+  schedule:
+    - cron: '37 6 * * *'
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish validated observations to private HF live/ (never weights)'
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: brent-live-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || vars.BRENT_DAILY_ENABLED == '1')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      BRENT_LIVE_UPDATE_AUTHORIZED: ${{ vars.BRENT_LIVE_UPDATE_AUTHORIZED }}
+      BRENT_LIVE_REPO_ID: Juaandeleoon/caso-2-prediccion-petroleo
+      BRENT_DATA_REPO_ID: Juaandeleoon/caso-2-prediccion-petroleo
+      BRENT_DATA_REVISION: '6b5f190dc22393ee91d9a1bffe9c17c27672bab1'
+      HF_HUB_DISABLE_TELEMETRY: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.13'
+      - name: Check authorization (no provider access before this)
+        run: |
+          test "$BRENT_LIVE_UPDATE_AUTHORIZED" = "1" || { echo "Daily acquisition/publication not authorized in repository variables"; exit 1; }
+      - name: Install isolated production and publisher dependencies
+        run: |
+          python -m pip install uv==0.13.9
+          uv pip install --system --require-hashes -r deployment/automation/requirements.txt
+          uv pip check --system
+      - name: Test data pipeline and publication controls offline
+        run: python -B -W error -m unittest discover -s tests -p test_live_data.py -v
+      - name: Acquire, validate three frozen networks, then optionally publish
+        env:
+          HF_TOKEN: ${{ secrets.HF_LIVE_WRITE_TOKEN }}
+          PUBLISH_REQUESTED: ${{ github.event_name == 'schedule' || inputs.publish }}
+        run: |
+          args=()
+          if [ "$PUBLISH_REQUESTED" = "true" ]; then args+=(--publish); fi
+          python -B scripts/update_live_data.py --workdir "artifacts/local/actions-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" "${args[@]}"
+      # No upload-artifact or data caches: this GitHub repository is public.
+      # Only live/ receives private data; model/checkpoint paths are not operations.
