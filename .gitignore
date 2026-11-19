@@ -279,7 +279,7 @@ docs/auditoria/
 # Public deployment template; real secrets remain excluded.
 !/deployment/community-cloud/secrets.example.toml
 
-# Presentación pausada: conservar borradores y exportaciones solo en local.
+# Presentación definitiva y borradores: conservación local y entrega académica separada.
 /presentacion/
 /presentacion_final/
 /.chart-data-*/

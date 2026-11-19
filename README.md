@@ -1,134 +1,20 @@
-# Predicción del precio del petróleo Brent
+# Brent Forecast · Predicción del precio del petróleo Brent
 
-Proyecto individual del Caso 2 de Aprendizaje Automático de la UAX: comparación de RNN, LSTM y GRU con persistencia a **5, 63 y 252 días hábiles**. Se conservan intactos el [enunciado oficial](docs/assignment/ENUNCIADO.pdf) y los [materiales del profesor](docs/README_profesor.md).
+Trabajo individual de **Juan de León García**, Caso 2 de Aprendizaje Automático, **Universidad Alfonso X el Sabio (UAX)**. Compara RNN, LSTM y GRU con persistencia para predecir el Brent a **5, 63 y 252 días hábiles** e integra las redes originales en una aplicación con inferencia real en CPU.
 
-**Conclusión principal:** ninguna arquitectura neuronal supera a persistencia en el promedio de las tres semillas de test, en ninguno de los tres horizontes. LSTM-B/42 fue elegida exclusivamente en desarrollo; se mantiene como demostración de aprendizaje profundo y sus malos resultados se muestran expresamente. Los pesos, transformadores, predicciones y resultados originales permanecen congelados.
+**Conclusión:** persistencia obtiene los menores errores medios de test en los tres horizontes. Las redes no demostraron superioridad. Se mantienen los resultados negativos, las decisiones previas de selección y las limitaciones de generalización, especialmente a 252 días. Es un estudio académico, no una herramienta de predicción financiera fiable.
 
-**Aplicación original y respaldo:** `app.py`, con inferencia real CPU de RNN, LSTM y GRU, persistencia y cinco páginas. La entrega incluye el repositorio y la web pública; Streamlit queda como respaldo completo en local. El estudio está cerrado; actualizar observaciones no modifica los pesos. No se presenta como herramienta de predicción financiera fiable.
-
-**Estado de entrega:** revisión académica final del código y de la aplicación completa, publicada en la rama `main`. Los paquetes necesarios para ejecutar la aplicación completa están conservados localmente, fuera de Git. **Un clon por sí solo no incluye los modelos ni todos los gráficos**: necesita los dos ZIP originales desde una copia cuyo acceso y traslado estén autorizados. Los artefactos no se ofrecen como descarga pública; la web desplegada los obtiene mediante autenticación de servidor.
-
-Para revisar el trabajo: [datos y fuentes](#datos-y-fuentes), [metodología](#metodología-congelada), [resultados y cuatro métricas](#resultados-finales-de-test), [aplicación](#aplicación-brent-forecast--energy-intelligence) y [cumplimiento académico](#cumplimiento-del-enunciado-y-aclaración-docente). La [guía de publicación](docs/PUBLICACION.md) contiene inventario, exclusiones, permisos y pasos posteriores.
-
-**Estado web comprobado (19/11/2026):** [Brent Forecast](https://brent-forecast.vercel.app) devuelve `/api/ready=200` con modelos de Hugging Face e inferencia real. Streamlit y la presentación pausada permanecen conservados. Antes de esta fase, `/api/models` mostraba datos adquiridos el 11/11/2026 y actualización automática desactivada; no había workflows ni ejecuciones de Actions.
-
-**Actualización diaria preparada:** [workflow de observaciones](.github/workflows/update-live-data.yml), cron diario y ejecución manual, validación con las tres redes y publicación atómica únicamente en `live/` del Models privado. No reentrena ni cambia pesos, resultados, ZIP originales o el CSV del profesor. Vercel conserva sus pins científicos y resuelve las nuevas revisiones de **datos** bajo demanda, con hashes y última copia válida. Requiere configurar secretos/variables de GitHub, una primera ejecución manual y un único despliegue inicial de este código; no hay redeploy diario. La [guía operativa completa](docs/ACTUALIZACION_DIARIA.md) detalla permisos confirmados por el propietario, primera adquisición sin fuga retrospectiva, configuración, comprobación en la web, fallos y reentrenamiento manual futuro.
-
-Verificación de esta fase: **249/249 pruebas Python y 7/7 JavaScript**, además de siete contratos del workflow en una copia limpia sin datos ni pesos. La prueba real de proveedores generó un snapshot válido y las tres redes lo procesaron; un ensayo local con ese snapshot pasó17consultas API. No equivale a una ejecución de GitHub Actions: activar el cron y verificar la publicación requiere configurar los secretos y variables descritos en la guía. Los logs y snapshots de prueba permanecen fuera de Git.
-
-**Configuración de Vercel:** raíz `deployment/vercel-app`, preset Other, build `node build.mjs`, salida `public`, Python3.13, PyTorch CPU original y Large Functions. No crear un `requirements.txt` en esa raíz: el builder estático lo instalaría antes de seleccionar Python. Véase [importación y diagnóstico](docs/VERCEL_IMPORTACION.md). Las verificaciones de preparación anteriores se conservan como historial en sus documentos; no sustituyen las comprobaciones remotas ni autorizan nuevos usos de datos.
-
-**Importación desde GitHub:** seleccionar **Root Directory `deployment/vercel-app`**, **Framework Other**, build `node build.mjs` y salida `public`. El snapshot contiene solo código/configuración publicables y sus hashes. Streamlit permanece intacto. La configuración preparada permite despliegues Git solo desde `main`; las demás ramas quedan bloqueadas. Publicarla puede iniciar un despliegue Production y requiere autorización. La [guía de importación](docs/VERCEL_IMPORTACION.md) detalla variables, comprobaciones y el procedimiento para desplegar el commit reciente. Integración verificada: **236/236 pruebas Python y 6/6 JavaScript**.
-
-| Destino | Enlace y estado |
+| Recurso | Acceso y finalidad |
 |---|---|
-| Código | [Repositorio GitHub existente](https://github.com/Juandeleongarcia/caso-2-prediccion-petroleo), rama `main`, [revisión de entrega en main](https://github.com/Juandeleongarcia/caso-2-prediccion-petroleo/tree/main). |
-| Modelos y evidencia portable | [Hugging Face Models privado](https://huggingface.co/Juaandeleoon/caso-2-prediccion-petroleo): seis archivos observados; pendientes permisos acreditados y verificación de descarga desde el servidor. No contiene todo el histórico/evidencia necesario. |
-| Aplicación alojada | Nueva web preparada para revisar frontend estático en Vercel; backend PyTorch pendiente de validación Linux/remota y permisos. Streamlit se conserva. No hay despliegue. |
+| [Aplicación Brent Forecast](https://brent-forecast.vercel.app/) | Web pública HTML/JavaScript con backend Python/PyTorch e inferencia real; cinco secciones. |
+| [Repositorio GitHub](https://github.com/Juandeleongarcia/caso-2-prediccion-petroleo) | Código, configuraciones, pruebas, documentación y métricas agregadas publicables. |
+| [Hugging Face Models](https://huggingface.co/Juaandeleoon/caso-2-prediccion-petroleo) | Repositorio **privado** de artefactos; no es una descarga pública. El acceso de la profesora sigue pendiente. |
+| [Índice de documentación](docs/README.md) | Recorrido de evaluación, documentación operativa y separación del historial técnico. |
+| [PDF de enlaces para la entrega](docs/entrega/Enlaces_Brent_Forecast.pdf) | Segundo documento de entrega; declara expresamente la restricción de acceso a Hugging Face. |
 
-## Instalación e inferencia sin entrenar
+**Estado comprobado el 19/11/2026:** la web devuelve `/api/ready=200`, con fuente `hf` y horizontes 5/63/252. `/api/models` identifica RNN, LSTM, GRU y persistencia, y un snapshot live verificado adquirido el 19/11/2026. La actualización de observaciones está activa; los pesos siguen congelados. Streamlit (`app.py`) permanece como respaldo completo local.
 
-Entorno comprobado: Windows, Python 3.13.7, Poetry 2.5.1 y CPU. Desde la raíz del repositorio:
-
-```bash
-poetry install
-poetry check --lock
-poetry run python -m pip check
-```
-
-La inferencia necesita el paquete congelado `brent-frozen-v1.zip`, además del código. Su identidad y SHA256 se registran en [configs/serving_bundle.json](configs/serving_bundle.json). El ZIP se conserva en `artifacts/releases/`, fuera de Git. Debe trasladarse desde una copia autorizada; no se ha publicado automáticamente en ningún servicio externo.
-
-```bash
-poetry run python scripts/manage_artifacts.py install --archive artifacts/releases/brent-frozen-v1.zip --registry configs/serving_bundle.json --destination artifacts/local/brent-frozen-v1
-poetry run python scripts/manage_artifacts.py verify --directory artifacts/local/brent-frozen-v1
-```
-
-La instalación comprueba el SHA256 esperado, las rutas y los hashes de los miembros del archivo antes de cargar los pesos. Rechaza contenido inesperado y destinos existentes. Si el paquete ya está instalado, basta con verificarlo. Un clon sin el ZIP todavía no dispone de los pesos ni de los datos locales necesarios para inferencia.
-
-```python
-from pathlib import Path
-import sys
-import pandas as pd
-
-sys.path.insert(0, "src")
-from oil_forecast.inference import load_forecaster
-
-bundle = Path("artifacts/local/brent-frozen-v1")
-service = load_forecaster(bundle)
-window = pd.read_csv(bundle / "latest_window.csv")
-forecast = service.predict(window)
-history = pd.read_csv(bundle / "brent_history.csv")
-metrics = service.evaluation_metrics("test")
-```
-
-No se necesitan los snapshots ni los experimentos originales para este ejemplo. La API devuelve precio, cambio, fechas objetivo e intervalos de la red y de persistencia. Valida las 60 filas, el calendario, el orden de variables y la disponibilidad de cada entrada; no necesita etiquetas futuras ni reajusta escaladores o cuantiles.
-
-## Aplicación: Brent Forecast | Energy Intelligence
-
-Desde PowerShell, en la raíz y con las dependencias y ambos paquetes instalados, este arranque permite enseñar el estudio sin realizar adquisiciones externas:
-
-```powershell
-$env:BRENT_AUTO_REFRESH = "0"
-$env:BRENT_AUTO_PREPARE = "0"
-poetry run streamlit run app.py --server.address 127.0.0.1 --server.port 8501
-```
-
-Abre `http://127.0.0.1:8501`. La aplicación tiene cinco vistas: mercado e indicadores disponibles; predicciones reales de persistencia/RNN-D/LSTM-B/GRU-C; comparación por horizonte, conjunto y semillas; curvas y errores de los experimentos guardados; metodología y límites. Muestra salidas directas a 5/63/252 días lunes–viernes y bandas nominales del 80 %, sin interpolar una trayectoria futura. Los orígenes antiguos se consultan mediante predicciones archivadas, nunca ejecutando sobre ellos un checkpoint posterior.
-
-El segundo paquete, `brent-dashboard-v1.zip`, contiene una selección compacta de las evidencias experimentales, sin pesos adicionales: todas las métricas y curvas guardadas, predicciones de la semilla canónica 42 y persistencia de los cuatro experimentos. Los gráficos ofrecen sus bloques disponibles; la selección inicial es fija, sin elegir ejemplos por resultados favorables. La ausencia de validación en los reajustes finales de épocas prefijadas permanece explícita. Su identidad se registra en [configs/dashboard_bundle.json](configs/dashboard_bundle.json).
-
-Para instalar esa evidencia en otro equipo:
-
-```powershell
-poetry run python scripts/manage_artifacts.py install --archive artifacts/releases/brent-dashboard-v1.zip --registry configs/dashboard_bundle.json --destination artifacts/local/brent-dashboard-v1
-poetry run python scripts/manage_artifacts.py verify --directory artifacts/local/brent-dashboard-v1
-```
-
-Los paquetes ya instalados no se sobrescriben. Con ambos paquetes, la aplicación funciona sin `data/` ni `experiments/` y sin conexión. Sin evidencia, mantiene inferencia y comparación final e indica qué gráficos faltan. Sin pesos, explica cómo preparar los recursos y permite consultar la metodología. El botón «Preparar o verificar recursos» verifica los directorios existentes o instala los ZIP locales confiables.
-
-Cuando la actualización está habilitada, la aplicación comprueba los datos al iniciarse y cada cinco minutos con una sesión activa; descarga una copia nueva cuando han transcurrido 24 horas desde la última adquisición válida. «Actualizar datos ahora» permite una consulta manual. Cambiar de página no dispara descargas si no corresponde. Los tres modelos CPU se cargan en caché y sus pesos, escaladores y cuantiles permanecen intactos. El arranque anterior pausa la consulta automática; solo debe reactivarse o utilizarse la consulta manual cuando el uso de los proveedores esté autorizado.
-
-La preparación de alojamiento añade `BRENT_AUTO_PREPARE=true`: instala los paquetes ausentes al abrir la aplicación, sin intervención del profesor. `BRENT_HF_REPO_ID` y `BRENT_HF_REVISION` identifican un repositorio Models y su commit completo de 40 caracteres; `HF_TOKEN`, si hace falta, se guarda exclusivamente en los secretos del servidor. Se comprueban SHA256 y manifiestos, no se sobrescriben paquetes instalados, y un fallo permite reintentar desde el botón existente. Esta opción está desactivada si no se configura. Los permisos de publicación y uso de los datos siguen pendientes.
-
-La política está en [configs/app.json](configs/app.json): frecuencia inicial de 24 h, reintento de fallos a los 15 min y comprobación de sesión cada 300 s. `BRENT_REFRESH_HOURS` permite cambiar la frecuencia; `BRENT_AUTO_REFRESH=0` desactiva consultas automáticas y `BRENT_LIVE_DIR` elige el directorio escribible. El botón manual conserva un antirrebote de 60 s. En un alojamiento suspendido no se ejecutan consultas de fondo: se comprueba de nuevo al arrancar.
-
-Los snapshots en `data/live/` son inmutables. Un bloqueo nativo no bloqueante coordina sesiones y procesos; un puntero JSON se publica atómicamente solo tras verificar SHA256, política temporal, diez entradas habilitadas y compatibilidad de inferencia. Ante un fallo de cualquier entrada —incluidos los Yahoo opcionales del descargador— se conserva la última copia completa. ORB queda excluida de esa exigencia por no ser entrada de las redes. En reinicios se recupera la última copia válida; si no existe, se utiliza el paquete congelado. La pérdida del almacenamiento temporal del alojamiento implica volver a ese paquete y comprobar las fuentes, sin prometer persistencia no contratada. Los fallos también respetan el intervalo de reintento.
-
-El histórico permite activar acontecimientos y consultar su contexto: máximo y crisis de 2008, exceso de oferta 2014–2016, pandemia de 2020, Ucrania en 2022 y movimientos de 2026. [configs/economic_events.json](configs/economic_events.json) separa hechos documentados, interpretación económica y referencias. Los marcadores se calculan sobre observaciones spot reales del episodio completo antes de filtrar el gráfico, sin inventar precios ni equiparar la fecha del extremo con una causa. Los episodios son contexto retrospectivo, nunca nuevas entradas de las redes. Las explicaciones de 2026 usan el [STEO de EIA del 10/11/2026](https://www.eia.gov/outlooks/steo/report/global_oil.php), con revisión documental fechada; no convierten sus previsiones de 2027 en hechos ni en resultados de nuestros modelos.
-
-La predicción incorpora una explicación determinista según modelo, horizonte y resultado, sin LLM ni API de texto. Contrasta referencia y última cotización, cambio, bandas y MAE de la semilla 42 frente a persistencia; no convierte errores en probabilidades de acierto. Los resultados archivados se describen retrospectivamente, sin introducir cotizaciones actuales como conocidas entonces. La calculadora opcional multiplica un volumen por referencia, persistencia, estimación y límites originales, con redondeo final a céntimos. Son escenarios del componente spot en USD, sin primas, transporte, impuestos ni conversión de divisa; no son recomendaciones de inversión ni costes garantizados.
-
-La fecha de adquisición, la observación económica, el origen y el reajuste lógico se muestran por separado. El checkpoint es histórico y ha vencido su cadencia semestral: consultar datos recientes no lo convierte en un modelo actualizado. Los retardos asumidos no certifican disponibilidad histórica point-in-time; OPEP figura como no disponible en el snapshot congelado.
-
-## Estructura y artefactos
-
-| Ruta | Función | Git |
-|---|---|---|
-| `app.py`, `.streamlit/config.toml` | Entrada y tema de la aplicación local | Sí |
-| `src/oil_forecast/` | Adquisición, datos, redes, entrenamiento, evaluación, incertidumbre e inferencia | Sí |
-| `scripts/` | Ejecutores reproducibles y gestión del paquete congelado | Sí |
-| `configs/` | Fuentes, protocolo, experimentos y registro del paquete | Sí |
-| `tests/` | Contratos temporales, métricas, modelos y artefactos | Sí |
-| `docs/assignment/`, `docs/README_profesor.md` | Materiales originales de la asignatura | Sí |
-| `docs/PUBLICACION.md` | Inventario de entrega y comandos de continuación | Sí |
-| `docs/deployment/artifact_inventory.csv` | Inventario de 92 archivos, tamaños, hashes, funciones y permisos | Sí |
-| `deployment/huggingface/README.md` | Ficha de modelos propuesta, sin licencia inventada | Sí |
-| `deployment/community-cloud/secrets.example.toml`, `packages.txt` | Plantilla sin secretos reales y zonas horarias Linux | Sí |
-| `artifacts/derived/brent-academic-v1/` | Métricas académicas adicionales y manifiesto de R² | Sí |
-| `data/` | CSV original, snapshots, datos derivados y cachés locales | No |
-| `experiments/` | Historial válido, resultados completos, pesos y gráficos | No |
-| `artifacts/releases/`, `artifacts/local/` | Archivo distribuible y paquete instalado | No |
-| `docs/auditoria/` | Evidencias y documentación interna de trabajo | No |
-
-El paquete de inferencia incluye los pesos y transformadores de RNN-D, LSTM-B y GRU-C con semilla 42, protocolo, cuantiles, métricas de las tres semillas, histórico Brent, última ventana válida y predicciones de referencia. Sus manifiestos conservan hashes y procedencia. La API sirve LSTM-B/42; la presencia de otros candidatos no cambia la selección.
-
-Para reconstruir el paquete desde los resultados locales originales, sin entrenar ni recalibrar:
-
-```bash
-poetry run python scripts/manage_artifacts.py build
-```
-
-El constructor utiliza por defecto la evaluación final y el snapshot preparado; crea destinos nuevos y conserva íntegros los archivos de origen. Un ZIP verificado puede trasladarse a otro ordenador. Su publicación como Release requiere una acción posterior autorizada; no se ha subido a servicios externos en este cierre.
+El [enunciado oficial](docs/assignment/ENUNCIADO.pdf), las [instrucciones del profesor](docs/README_profesor.md) y su script de descarga se conservan sin cambios. Un clon público **no incluye datos originales, checkpoints, ZIP privados ni todos los experimentos**: véanse las instrucciones y permisos de reproducción más abajo.
 
 ## Datos y fuentes
 
@@ -262,108 +148,137 @@ Los cuantiles usan 471 orígenes por grupo. Se excluye de los tres horizontes el
 
 Una cobertura alta con bandas amplias no significa calibración perfecta al 80 %. GRU a 252 días presenta infracobertura. La dependencia temporal, los errores solapados y los cambios de régimen impiden prometer cobertura exacta. La cobertura sobre el pool de calibración es descriptiva, no una evaluación independiente.
 
-## Fechas, vigencia y uso de la aplicación
+## Aplicaciones, fechas y vigencia
 
-El checkpoint servido corresponde al **reajuste lógico del backtest del 01/07/2024**, con corte 28/06/2024. Su último origen de entrenamiento es 28/06/2023; la última etiqueta admitida estaba disponible el 28/06/2024. La fecha real de ejecución del entrenamiento no quedó registrada y no se deduce del reajuste lógico ni de la fecha de modificación del archivo.
+La web mantiene **Visión general, Predicción, Comparación, Evaluación y Metodología**: histórico, predicciones reales de las tres redes y persistencia, resultados archivados frente a valores reales, errores, cuatro métricas, curvas de entrenamiento/validación e intervalos. Los selectores utilizan los datos auténticos; cuando faltan recursos se indica el bloqueo, sin predicciones simuladas. La API sirve las redes de semilla 42 y conserva la selección previa de LSTM-B/42; esas salidas no deben confundirse con las medias de tres semillas de las tablas.
 
-El snapshot se descargó el 11/11/2026. En la decisión del 11/11/2026, el último Brent admitido por el retardo asumido es el de 28/10/2026, distinto del último Brent observado en el snapshot, 03/11/2026. La API distingue origen, observación de referencia, disponibilidad, actualización de datos, corte y reajuste del modelo.
+El checkpoint servido corresponde al **reajuste lógico del backtest del 01/07/2024**, con corte 28/06/2024. Su último origen de entrenamiento es 28/06/2023 y su última etiqueta admitida estaba disponible el 28/06/2024. La fecha física de ejecución del entrenamiento no quedó registrada. No se deduce de la fecha lógica ni de la modificación del archivo.
 
-Una ventana reciente no actualiza los pesos. El servicio informa que ha vencido la cadencia semestral del checkpoint histórico y conserva sus limitaciones. No se ha realizado un reajuste de producción posterior a test ni se presenta el modelo como actualizado a 2026.
+La aplicación distingue adquisición de datos, fecha de observación, disponibilidad, origen de predicción, referencia Brent y corte/reajuste lógico del modelo. El precio de referencia admisible puede ser anterior a la última cotización observada. Actualizar la ventana no actualiza los pesos: ha vencido su cadencia semestral y no se ha realizado un reajuste de producción posterior a test.
 
-La aplicación conserva la referencia ingenua visible y las redes como demostración, sin atribuirles superioridad inexistente. La actualización controlada de datos ya está implementada; un reajuste de producción requiere una fase posterior independiente y no se ejecuta desde la interfaz.
+Los acontecimientos históricos se documentan en [configs/economic_events.json](configs/economic_events.json). Son contexto retrospectivo, no nuevas variables ni backtests inventados. Las explicaciones de predicción son reglas deterministas; los intervalos no son probabilidades de acierto. La calculadora de costes muestra escenarios spot en USD sin primas, transporte ni impuestos.
 
-## Cumplimiento del enunciado y aclaración docente
+### Actualización diaria de observaciones
 
-Contraste realizado leyendo íntegramente las cuatro páginas de `docs/assignment/ENUNCIADO.pdf` y las instrucciones originales. Según la aclaración del profesor comunicada en el Prompt 9, actualizar datos es obligatorio, mantener modelos congelados está permitido y un eventual reentrenamiento no puede depender del ordenador del estudiante. Se adopta definitivamente actualización dinámica de datos con pesos congelados; no se implementa un entrenamiento manual de producción.
+El [workflow Brent daily observations](.github/workflows/update-live-data.yml) dispone de cron diario **06:37 UTC** y ejecución manual. Adquiere las diez series, valida esquema, fechas, ausencias y duplicados, y comprueba inferencia con las tres redes congeladas antes de publicar atómicamente un snapshot en `live/` del Models privado. Conserva la última copia válida si falla una fuente o validación. No sobrescribe el CSV del profesor, los ZIP ni los resultados científicos.
 
-| Requisito del enunciado | Estado y evidencia |
+El 19/11/2026, `BRENT_DAILY_ENABLED=1` está habilitado y la [ejecución manual #7](https://github.com/Juandeleongarcia/caso-2-prediccion-petroleo/actions/runs/44558822525) terminó correctamente. La web consume su snapshot verificado. Las ejecuciones observadas hasta esta revisión son manuales: todavía no se acredita una ejecución disparada por el cron. La [validación previa sin publicación](https://github.com/Juandeleongarcia/caso-2-prediccion-petroleo/actions/runs/44556450853) conserva la prueba `status=validated` y `weights_updated=false`.
+
+Vercel mantiene las revisiones científicas fijas y consulta el canal live cada cinco minutos **por instancia y bajo demanda**. Resuelve un commit completo de datos, comprueba SHA256, política temporal y vinculación al manifiesto de modelos; así cambia observaciones sin redeploy diario. Una caída conserva la copia validada disponible; un reinicio sin caché puede volver al bundle congelado. La web informa de la fecha realmente utilizada.
+
+Las observaciones nuevas respetan el máximo entre el retardo asumido y su primera adquisición efectiva; no se antedatan datos. El histórico retrospectivo original no se convierte por ello en point-in-time. **Actualización de datos y reentrenamiento son procesos distintos.** El workflow operativo no reentrena. Existe un [procedimiento propuesto de reentrenamiento manual](docs/ACTUALIZACION_DIARIA.md), pero su ejecución, validación y publicación controlada de nuevos modelos siguen pendientes.
+
+La guía [Actualización diaria](docs/ACTUALIZACION_DIARIA.md) explica secretos de servidor, autorizaciones, validaciones, diagnóstico y comprobación del snapshot en la API. No se guardan tokens en código, navegador, documentación o logs.
+
+## Estructura del repositorio
+
+| Ruta | Contenido y conservación |
 |---|---|
-| Brent objetivo y WTI diarios desde 2000, fuentes oficiales | Cumplido: FRED/EIA, calendario lunes–viernes y última observación publicada por cada fuente; la adquisición no elimina sus retardos. |
-| Variables externas mundiales | Parcial: WTI, gas, BCE, dos cambios, dólar, oro, cobre y VIX presentes; ORB sigue sin integración fiable. |
-| Ausencias, festivos y precios anómalos | Cumplido: unión por disponibilidad, límites de antigüedad, máscaras y valores originales; se conservan precios negativos de WTI. El futuro WTI negativo no se confunde con Brent spot. |
-| Escalado ajustado solo con entrenamiento | Cumplido en el estudio y conservado en los artefactos; la aplicación no ajusta transformadores. |
-| Ventanas para redes recurrentes | Cumplido: 60 pasos, diez series y diez máscaras; veinte entradas por paso. |
-| RNN, LSTM y GRU con walk-forward y ajuste de hiperparámetros | Cumplido en los experimentos cerrados; no se repiten entrenamientos en esta fase. |
-| Comparación con modelo ingenuo | Cumplido: misma referencia disponible, orígenes y objetivos; persistencia sigue siendo referencia principal. |
-| Predicciones a 5, 63 y 252 días hábiles | Cumplido: tres salidas directas y calendario idéntico al backend, sin inventar una trayectoria diaria. |
-| Rango de incertidumbre por horizonte | Cumplido: cuantiles nominales del 80 % congelados antes de test; sin garantía de cobertura futura. |
-| MSE, MAE y RMSE; R² recomendado por el profesor | Cumplido: métricas originales de desarrollo, calibración y test; medias y semilla 42 diferenciadas. |
-| Acierto de dirección | Opcional; no se añade una nueva métrica ni se reescribe el estudio. |
-| Comparación en condiciones y presupuesto similares | Cumplido: datos, ventanas, particiones y protocolo común; variantes y objetivos de pérdida seleccionados en desarrollo y declarados. |
-| Tabla de errores, mejora, parámetros y tiempo | Cumplido en Comparación; vista conjunta de horizontes y recursos por semilla. |
-| Modelo elegido y conclusión justificada | Cumplido: LSTM-B/42 elegida previamente entre redes; se informa que persistencia gana en medias de test y de los fallos de la red operativa. |
-| Aplicación Python, histórico, horizonte y tendencias | Cumplido localmente en las cinco páginas Streamlit; modelos reales y predicciones archivadas temporalmente compatibles. |
-| Precio, variación e intervalo comprensibles | Cumplido; la referencia admisible y la última cotización se distinguen por sus fechas. |
-| Explicación breve, fiabilidad y factores invalidantes | Cumplido mediante reglas deterministas, MAE operativo y comparación ingenua; no se presentan probabilidades de acierto. |
-| Ciclo económico y acontecimientos mínimos | Cumplido: seis episodios cubren 2008, 2014–2016, 2020, 2022 y 2026, con marcadores de datos reales, activación y fuentes oficiales. |
-| Actualización dinámica | Cumplido conforme a la aclaración docente: inicio/24 h, comprobación de sesión, botón manual, última copia válida y modelos congelados. |
-| Trabajo individual y transparencia académica | Declarado en el README, incluida asistencia de IA; identidad y declaración final a confirmar por el estudiante. |
-| Máximo cinco diapositivas de contenido, sin portadas | Pendiente fuera de esta fase; no se prepara todavía la presentación. |
-| Código en GitHub compartido y README de ejecución | Código y documentación incluidos en la revisión final de `main`; datos y paquetes restringidos excluidos. No se entrega un fichero de código aparte. |
-| Aplicación funcional y solución viable, sin complejidad técnica innecesaria | Cumplido localmente en CPU; automatización y cálculos usan el backend existente y biblioteca estándar. Linux/Community Cloud se verificará posteriormente. |
-| Autoría propia y prohibición de plagio | Transparencia documentada; la responsabilidad y validación académica corresponden al estudiante. No se certifica una autoría ficticia. |
+| `src/oil_forecast/` | Adquisición, protocolo temporal, arquitecturas, entrenamiento, evaluación, incertidumbre e inferencia. |
+| `scripts/` | Ejecutores del estudio, actualización live y gestión verificada de artefactos. |
+| `configs/` | Fuentes, experimentos, política temporal y registros de hashes; no contienen credenciales. |
+| `tests/`, `web/tests/` | Pruebas Python e integración/frontend JavaScript. |
+| `.github/workflows/` | Automatización operativa de observaciones, sin entrenamiento automático. |
+| `web/` | Frontend y backend de la aplicación completa; [guía local](web/README.md). |
+| `deployment/vercel/`, `deployment/vercel-app/` | Plantilla y snapshot autónomo de producción; la duplicación es deliberada y se comprueba con manifiestos. |
+| `app.py`, `.streamlit/` | Aplicación Streamlit original de respaldo. |
+| `artifacts/derived/brent-academic-v1/` | Métricas agregadas adicionales y manifiesto de R²; no sustituyen resultados originales. |
+| `docs/` | Materiales docentes, índice, guías técnicas, inventario de artefactos y PDF de enlaces. |
+| `deployment/huggingface/README.md` | Ficha académica preparada; no equivale a una licencia de redistribución. |
+| `data/`, `experiments/` | Datos y evidencias científicas originales **locales, excluidos de Git**. |
+| `artifacts/releases/`, `artifacts/local/` | ZIP verificados, instalación y evidencias locales **excluidos de Git**. |
+| `presentacion/`, `docs/auditoria/` | Presentaciones definitivas/borradores e informes internos conservados localmente. |
 
-Los OHLC y volúmenes de futuros Brent/WTI figuran como complementos en la tabla de fuentes del profesor y permanecen en los materiales originales. La matriz recurrente cerrada utiliza las diez series descritas, sin añadir nuevas entradas ni cambiar el estudio para aprovechar esos complementos.
+La alternativa histórica `deployment/public_app/` está identificada como **demostración de resultados sin inferencia neuronal**. Sus scripts y pruebas se conservan por trazabilidad; no es la web principal ni sustituye a Streamlit. No se reorganizan rutas de ejecución ni se eliminan evidencias científicas.
 
-La búsqueda acotada de ORB confirmó que el [portal de OPEP](https://www.opec.org/opec-basket-price.html) enlaza el mismo XML histórico, pero no validó una descarga diaria completa ni condiciones de redistribución. El rechazo de MIME de la herramienta de consulta no prueba un nuevo HTTP 403: el estado de una adquisición real queda en su propio manifiesto. No se muestra una cotización no verificada ni se sustituye por medias mensuales u otra cesta.
+## Reproducción e instalación local
 
-## Reproducción y verificación
-
-`poetry install` utiliza `poetry.lock`; el entorno contrastado es **Python 3.13.7, Poetry 2.5.1, Windows x86-64 y CPU**. Streamlit 1.67.0, Plotly 7.1.0, NumPy 2.5.4 y PyTorch 2.15.0+cpu están bloqueados. El lock tiene 53 entradas y 52 paquetes distintos; NetworkX aparece con dos condiciones de versión de Python. Matplotlib solo se requiere para regenerar figuras científicas, en un entorno separado; no es una dependencia de inferencia.
-
-Los dos ZIP originales, una vez autorizado su uso y traslado, y el suplemento académico permiten ejecutar la aplicación sin `data/` ni `experiments/`. Para reproducir íntegramente el estudio y sus pruebas científicas también hacen falta los snapshots y experimentos locales originales, conservados fuera de Git. Su ubicación y recuperación están descritas en la [guía](docs/PUBLICACION.md). Una nueva descarga puede contener revisiones y no garantiza identidad con el estudio cerrado.
-
-Con todos los recursos originales disponibles:
+Entorno contrastado: **Python 3.13.7, Poetry 2.5.1, Windows x86-64 y CPU**. `pyproject.toml` y `poetry.lock` conservan las dependencias científicas. La instalación Linux de Actions y el despliegue Vercel utilizan su configuración independiente de producción; no debe sustituirse por un lock generado arbitrariamente.
 
 ```bash
+poetry install
 poetry check --lock
 poetry run python -m pip check
-poetry run python -B -W error -m unittest discover -s tests -v
 ```
 
-Con una copia nueva del código y ambos ZIP instalados, sin los recursos de investigación:
+### Artefactos necesarios
+
+Para ejecutar la aplicación completa se necesitan **`brent-frozen-v1.zip`** (pesos RNN-D/42, LSTM-B/42 y GRU-C/42, transformadores, cuantiles, protocolo y recursos de inferencia) y **`brent-dashboard-v1.zip`** (evidencia y gráficos). Sus identidades están en [serving_bundle.json](configs/serving_bundle.json) y [dashboard_bundle.json](configs/dashboard_bundle.json). El [inventario de 92 artefactos](docs/deployment/artifact_inventory.csv) conserva tamaños, SHA256 y función.
+
+Se obtienen del propietario o de una copia privada con acceso y traslado autorizados; la web usa credenciales exclusivamente de servidor. **El acceso de la profesora al repositorio privado de Hugging Face aún no está concedido.** No convertir el repositorio en público ni compartir tokens como solución. Una nueva descarga de proveedores puede contener revisiones y no reproduce por sí sola el snapshot científico cerrado.
+
+Con los ZIP originales en `artifacts/releases/`:
 
 ```bash
-poetry run python -B -W error -m unittest discover -s tests -p test_app.py -v
+poetry run python scripts/manage_artifacts.py install --archive artifacts/releases/brent-frozen-v1.zip --registry configs/serving_bundle.json --destination artifacts/local/brent-frozen-v1
+poetry run python scripts/manage_artifacts.py install --archive artifacts/releases/brent-dashboard-v1.zip --registry configs/dashboard_bundle.json --destination artifacts/local/brent-dashboard-v1
+poetry run python scripts/manage_artifacts.py verify --directory artifacts/local/brent-frozen-v1
+poetry run python scripts/manage_artifacts.py verify --directory artifacts/local/brent-dashboard-v1
 ```
 
-La segunda comprobación requiere también el ZIP original en `artifacts/releases/`, que utiliza una prueba de descarga controlada. Un clon sin esos recursos no acredita la batería completa; omitir pruebas por falta de datos no equivale a superarlas.
+La instalación verifica archivo, rutas y miembros, y rechaza sobrescribir destinos existentes. Si ya están instalados, ejecutar solo `verify`. Con ambos paquetes y el suplemento agregado versionado, la aplicación funciona sin el árbol completo `data/`/`experiments/` y sin descargar proveedores. Reproducir íntegramente el estudio o su batería científica requiere además esos datos y experimentos originales.
 
-Los ejecutores `prepare_data.py`, `run_baseline.py`, `run_smoke.py`, `run_optimization.py`, `run_refinement.py` y `run_final_evaluation.py` conservan el procedimiento histórico, semillas, versiones, hashes y decisiones. No deben ejecutarse sobre los resultados existentes. Cualquier reproducción nueva exige permisos de uso de datos, destinos nuevos y el protocolo original. El script original del profesor se conserva como material docente: ejecutarlo puede sobrescribir su CSV. La aplicación nunca lo ejecuta.
+### Web completa en local
 
-### Comprobaciones del cierre de publicación
+Desde la raíz, con ambos paquetes instalados (PowerShell):
 
-El cierre de entrega supera **210/210 pruebas completas, sin fallos ni omisiones**, en **754,412 s**, con `python -X utf8 -B -W error -m unittest discover -s tests -v`. También pasan `poetry check --lock`, `python -m pip check` y `git diff --check`. Se corrigió únicamente la codificación UTF-8 de dos subprocesos aislados del arnés de pruebas; su comprobación focal pasa **4/4** en **13,859 s**. Los resultados históricos de comprobación se conservan en la [guía](docs/PUBLICACION.md).
+```powershell
+$env:BRENT_MODEL_SOURCE = "local"
+$env:BRENT_ALLOW_PROVIDER_ACCESS = "0"
+poetry run python -B web/server.py
+```
 
-La comparación con la auditoría anterior mantiene idénticos **234 de 239 archivos cotejados**. Los cinco cambios intencionados de esta fase son README, guía de publicación, textos de Metodología, etiqueta de fecha lógica y prueba de codificación. **163 recursos protegidos y las 92 entradas del inventario mantienen sus SHA256**, incluidos datos originales, experimentos, checkpoints, transformadores, cuantiles, métricas y los dos ZIP. No se eliminan evidencias ni se cambian los paquetes.
+Abrir `http://127.0.0.1:8765`. Es un servidor de desarrollo local. La configuración de producción se conserva en `deployment/vercel-app`: Root Directory de Vercel `deployment/vercel-app`, preset **Other**, build `node build.mjs`, salida `public`. Véanse [importación de Vercel](docs/VERCEL_IMPORTACION.md) y [plan de despliegue](docs/PLAN_DESPLIEGUE.md). No cambiar pins, hashes o interruptores de autorización para solventar fallos de acceso.
 
-La batería cubre las cinco páginas, cuatro modelos por tres horizontes, métricas, errores, disponibilidad temporal, actualización automática/manual, integridad, recuperación y aprovisionamiento. Las pruebas sintéticas de entrenamiento trabajan exclusivamente en temporales; no reentrenan los modelos del proyecto.
+### Streamlit como respaldo completo
 
-La revisión de cierre cubre las cinco páginas de la aplicación original en Chrome, en escritorio y en un viewport móvil de 390 × 844; se comprueban navegación, controles, curvas y tablas adaptables. Es una comprobación de diseño adaptable, no una prueba en un teléfono físico. Las revisiones visuales previas también se conservan. Sus capturas y los informes históricos permanecen en `artifacts/local/app-screenshots/` y `docs/auditoria/`, fuera de Git. La versión histórica del README con el registro cronológico de fases se conserva localmente en `docs/auditoria/README_pre_publicacion_prompt11.md`; este README se organiza ahora por contenido académico.
+```powershell
+$env:BRENT_AUTO_REFRESH = "0"
+$env:BRENT_AUTO_PREPARE = "0"
+poetry run streamlit run app.py --server.address 127.0.0.1 --server.port 8501
+```
 
-### Compatibilidad y límites de la verificación
+Abrir `http://127.0.0.1:8501`. Estas variables evitan adquisiciones o preparación automática durante la revisión local. La actualización controlada de Streamlit conserva sus funciones y requiere autorización para consultar proveedores; no entrena redes.
 
-Las rutas son relativas y se admiten las claves históricas de Windows en POSIX sin reescribir manifiestos. El lock incluye wheel CPU de Linux x86-64 para Python 3.13, pero **Linux y el despliegue remoto aún no se han ejecutado**. Linux debe disponer de las zonas horarias para `Europe/Madrid`; la rama POSIX del bloqueo de actualización sigue pendiente de validación en ese sistema.
+### Verificación sin reentrenar el estudio
 
-Las configuraciones del entorno histórico se preservan en `artifacts/local/research-environment/`. Sus hashes se cotejan con esa copia, sin confundirlos con el entorno ampliado de la aplicación. El código de carga incorpora adaptaciones posteriores de portabilidad y registro de cambios de entorno; no se afirma que todo el código actual sea idéntico al código histórico.
+Con los recursos originales disponibles:
 
-## Publicación, permisos y autoría
+```bash
+poetry run python -X utf8 -B -W error -m unittest discover -s tests -v
+node --test web/tests/frontend.test.mjs web/tests/build.test.mjs
+```
 
-La alternativa independiente `deployment/public_app/app.py` se conserva identificada como **«Demostración de resultados · Sin inferencia neuronal»**. Solo consulta métricas agregadas; no sustituye `app.py` ni satisface por sí sola el requisito de ejecutar redes. Su exportación de nueve archivos y sus pruebas se describen en la [sección G de la guía](docs/PUBLICACION.md#g-cierre-del-prompt-14-demostración-pública-de-resultados). No se ha desplegado ninguna de las dos entradas.
+Las pruebas sintéticas de entrenamiento trabajan en temporales; no alteran los modelos del proyecto. Un clon sin artefactos privados no acredita la batería completa. El cierre del 19/11/2026 ha superado **253/253 pruebas Python y 7/7 JavaScript**, sin omisiones. La comparación SHA256 protege datos, experimentos, pesos, cuantiles, manifiestos y presentación definitiva.
 
-GitHub contiene código, configuraciones, pruebas, lock, documentación docente y las 1.017 métricas agregadas del suplemento de R² con su manifiesto. Permanecen locales los datos, experimentos completos, pesos, transformadores, ZIP, capturas, auditorías y entornos. Los originales no se eliminan.
+Los ejecutores históricos `prepare_data.py`, `run_baseline.py`, `run_smoke.py`, `run_optimization.py`, `run_refinement.py` y `run_final_evaluation.py` documentan el procedimiento, pero **no forman parte del arranque**. No ejecutarlos sobre resultados existentes: cualquier reproducción requiere permisos, destinos nuevos y el protocolo original. El script del profesor puede sobrescribir su CSV si se ejecuta; la aplicación no lo invoca.
 
-Los materiales del profesor se mantienen para esta entrega: sus instrucciones indican copiarlos al repositorio personal y subirlos a GitHub. Esa autorización académica no equivale a una licencia general. La licencia del código propio y la identidad académica siguen pendientes de confirmación; no se ha asignado una licencia ficticia.
+## Cumplimiento académico y entrega
 
-**Revisión de fuentes del 17/11/2026:** los [términos actuales de FRED](https://fred.stlouisfed.org/legal/) incluyen restricciones sobre desarrollo y entrenamiento de ML; no se ha determinado su versión aplicable al estudio histórico. Esto requiere aclaración antes de nuevas adquisiciones, reproducciones o habilitación pública del servicio. La reutilización permitida por EIA de sus productos propios no resuelve las condiciones de FRED ni de las series de terceros. Los paquetes con datos Yahoo/FRED siguen fuera de publicación hasta resolver sus permisos. Detalles y fuentes en la [guía](docs/PUBLICACION.md).
+| Aspecto | Estado y evidencia |
+|---|---|
+| Trabajo individual, código y README en GitHub | Autor identificado; código, protocolos y pruebas versionados. Se declara asistencia de IA. |
+| RNN/LSTM/GRU y comparación con persistencia | Experimentos y resultados reales; selección solo en desarrollo; mismas observaciones de evaluación. |
+| Ventanas, escalado, walk-forward y cuatro métricas | Implementados y probados; particiones, supuestos y R² explicados arriba. |
+| Horizontes 5/63/252 e incertidumbre | Inferencia real con pesos originales y cuantiles congelados; límites de cobertura declarados. |
+| Aplicación funcional, explicación e historia económica | Web pública con backend Python; cinco secciones y Streamlit local de respaldo. |
+| Variables externas exigidas | **Parcial:** diez series utilizadas; ORB de OPEP no integrada. OHLC/volumen complementarios no son entradas de estas redes. |
+| Actualización dinámica | Observaciones automatizadas y canal live operativo; siguiente ejecución programada aún por acreditar. |
+| Reentrenamiento periódico mencionado en el enunciado | **Pendiente:** procedimiento futuro documentado; pesos congelados y sin workflow operativo de reentrenamiento de producción. |
+| Máximo cinco diapositivas de contenido más portada | Presentación definitiva UAX disponible: seis diapositivas, portada más cinco de contenido. |
+| Reproducibilidad desde un clon público | **Parcial:** código y configuración disponibles; artefactos privados y evidencias originales requieren acceso autorizado. |
 
-El aprovisionamiento admite `BRENT_HF_REPO_ID` más `BRENT_HF_REVISION`, o las URL explícitas `BRENT_INFERENCE_URL` y `BRENT_EVIDENCE_URL`. Para HF se exige HTTPS canónico y commit inmutable. El nuevo cargador privado utiliza `HF_TOKEN` solo en el origen HTTPS del Hub; conserva la autorización en redirecciones del mismo origen y la elimina al pasar a CDN u otro origen. Bloquea redirecciones a HTTP y oculta detalles sensibles de fallos. Las URL reales aún no están provisionadas. El CLI privado usa `manage_artifacts.py fetch ... --use-hf-token`, leyendo el secreto del entorno, sin incluirlo en los argumentos ni en Git.
+La entrega solicitada contiene **dos PDF**:
 
-La configuración gratuita está en la [plantilla de Community Cloud](deployment/community-cloud/secrets.example.toml). Se reutilizan `pyproject.toml` y `poetry.lock`; `packages.txt` declara `tzdata` para Linux. Seleccionar Python 3.13 en la plataforma. Se retiró la dirección local fija del tema para permitir el alojamiento; el arranque local sigue usando `--server.address 127.0.0.1`. No se ha abierto un servicio público como parte de las pruebas. La plantilla mantiene desactivadas las consultas automáticas de proveedores hasta aclarar su permiso; el mecanismo de actualización permanece probado y no reentrena.
+1. `presentacion/entrega_final_2026-11-19/Brent_Forecast_Defensa_Final_UAX.pdf` (local, seis páginas). Su PowerPoint y notas se conservan intactos junto al PDF. Esta carpeta permanece excluida de Git; no se publica contenido científico individual embebido ni material de plantilla sin revisar sus permisos.
+2. [Documento de enlaces](docs/entrega/Enlaces_Brent_Forecast.pdf), con GitHub, aplicación y Models privado; indica el acceso pendiente de la profesora.
 
-La autoría es individual. Se ha utilizado asistencia de IA para programación, revisión técnica y documentación; el estudiante debe confirmar su identificación y declaración académica conforme a las normas aplicables. La responsabilidad académica no se delega en la herramienta.
+No hay ZIP de entrega ni subida a Moodle. El estudiante debe entregar esos dos PDF por el canal académico y resolver el acceso autorizado a los artefactos privados si se requiere reproducción independiente. ORB y reentrenamiento periódico siguen siendo limitaciones explícitas; no se sustituyen por una declaración de cumplimiento total.
 
-La presentación de **máximo cinco diapositivas de contenido, sin contar portadas**, queda para una fase posterior. La publicación de esta revisión del código y la documentación fue autorizada expresamente en el cierre. Los artefactos restringidos permanecen excluidos y no se autoriza ningún despliegue.
+## Permisos, privacidad y autoría
 
+GitHub publica código, configuración, documentación y estadísticas agregadas. `.gitignore` excluye datos, experimentos, checkpoints, ZIP, cachés, credenciales y materiales locales. Los modelos y paquetes ya alojados en Models siguen privados; un repositorio privado no concede por sí mismo derechos de uso o redistribución.
 
-La validación manual del canal diario está [acreditada en GitHub Actions](https://github.com/Juandeleongarcia/caso-2-prediccion-petroleo/actions/runs/44556450853): diez fuentes, tres redes CPU, `status=validated` y `weights_updated=false`, sin publicación. Se corrigió un timeout de FRED específico del transporte del runner; [diagnóstico y repetición segura](docs/ACTUALIZACION_DIARIA.md#corrección-acreditada-del-primer-fallo-de-actions-19-11-2026). El cron y la publicación no se activan por superar ese ensayo.
+El propietario confirmó autorización para adquirir periódicamente las diez series, almacenarlas mediante Actions/Hugging Face y usarlas en la web académica. Esa confirmación de alcance no equivale a una licencia general de los proveedores, ni autoriza publicar datos o derivados adicionales. Se mantienen controles de autorización, secretos de servidor, revisiones fijas y SHA256. Las condiciones y limitaciones históricas se conservan en la [guía de publicación](docs/PUBLICACION.md).
+
+Se ha utilizado asistencia de IA para programación, revisión y documentación. Juan de León García asume la revisión, defensa y responsabilidad académica conforme a las normas aplicables. No se atribuye a la herramienta la autoría del trabajo ni se certifica una originalidad que no pueda comprobarse.

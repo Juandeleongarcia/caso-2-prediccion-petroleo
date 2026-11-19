@@ -1,5 +1,7 @@
 # Brent Forecast: web HTML y API Python
 
+> **Nota de cierre (19/11/2026):** este documento conserva el historial de fases. El [README principal](../README.md) recoge el estado actual: web desplegada con inferencia real, canal live operativo y presentación UAX terminada. Las restricciones y verificaciones anteriores se mantienen como trazabilidad; Hugging Face sigue privado y el acceso de la profesora está pendiente.
+
 Migración local en revisión. Streamlit (`app.py`) permanece íntegro como respaldo. No hay entrenamiento, publicación ni despliegue en esta fase. La presentación continúa pausada. La preparación posterior de producción, sus pruebas y bloqueos están en [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## Arranque local

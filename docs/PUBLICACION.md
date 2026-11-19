@@ -1,5 +1,7 @@
 # Inventario y preparación de publicación
 
+> **Nota de cierre (19/11/2026):** este documento conserva el historial de fases. El [README principal](../README.md) recoge el estado actual: web desplegada con inferencia real, canal live operativo y presentación UAX terminada. Las restricciones y verificaciones anteriores se mantienen como trazabilidad; Hugging Face sigue privado y el acceso de la profesora está pendiente.
+
 El código del Prompt 11 está publicado en [GitHub/main, commit 389530b](https://github.com/Juandeleongarcia/caso-2-prediccion-petroleo/tree/389530b78d42a1f76273c8f2608c08cc5c6805ce). Tras autorización expresa se verificó el contenido remoto: 75 rutas cambiadas, 80 archivos totales, sin datos ni pesos. Las secciones de preparación del Prompt 11 se conservan como registro de esa revisión.
 
 **Historial — nueva fase técnica 1 (19/11/2026):** la revisión publicada del Prompt 17 permanece en `45929b3`. La presentación queda pausada con todos sus borradores conservados. La nueva revisión local de limpieza no autoriza commit, push, reentrenamiento ni despliegue. La sección J contiene el alcance vigente; las secciones anteriores conservan el historial de los Prompts 11–17 y sus autorizaciones históricas.
