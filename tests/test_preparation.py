@@ -10,10 +10,26 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from oil_forecast.acquisition import download_snapshot, load_snapshot, parse_fred
+from oil_forecast.acquisition import download_snapshot, load_snapshot, parse_fred, _fetch_fred
+from urllib.error import HTTPError, URLError
+from types import SimpleNamespace
 
 
 class SourceContracts(unittest.TestCase):
+    def test_fred_curl_preserves_bytes_and_requires_https_without_shell(self):
+        body=b'DATE,DCOILWTICO\n2020-04-20,-36.98\n'
+        with patch.dict('os.environ',{'BRENT_FRED_TRANSPORT':'curl'}), patch('oil_forecast.acquisition.subprocess.run',return_value=SimpleNamespace(returncode=0,stdout=body+b'\n200')) as fetch:
+            self.assertEqual(_fetch_fred('https://fred.stlouisfed.org/graph/fredgraph.csv'),body)
+        args=fetch.call_args.args[0]
+        self.assertIn('--proto',args);self.assertIn('=https',args)
+        self.assertNotIn('--insecure',args);self.assertFalse(fetch.call_args.kwargs.get('shell',False))
+
+    def test_fred_curl_errors_never_become_observations(self):
+        for returncode,stdout,expected in [(28,b'',TimeoutError),(7,b'',URLError),(0,b'private\n503',HTTPError),(0,b'invalid',ValueError)]:
+            with patch.dict('os.environ',{'BRENT_FRED_TRANSPORT':'curl'}), patch('oil_forecast.acquisition.subprocess.run',return_value=SimpleNamespace(returncode=returncode,stdout=stdout)):
+                with self.assertRaises(expected) as caught:_fetch_fred('https://fred.stlouisfed.org/graph/fredgraph.csv')
+            self.assertNotIn('private',str(caught.exception))
+
     def test_fred_missing_marker_is_not_an_observed_label(self):
         raw = parse_fred(b"observation_date,DCOILBRENTEU\n2024-01-02,80\n2024-01-03,.\n2024-01-04,80\n", "brent", "DCOILBRENTEU")
         self.assertEqual(raw["is_observed"].tolist(), [True, False, True])

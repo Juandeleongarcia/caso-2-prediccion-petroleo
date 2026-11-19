@@ -5,6 +5,8 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import os
+import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
@@ -60,6 +62,32 @@ def _fetch(url: str) -> bytes:
         return response.read()
 
 
+def _fetch_fred(url: str) -> bytes:
+    """Use the runner's verified HTTPS curl transport only when explicitly selected.
+
+    GitHub-hosted Linux urllib requests time out while the identical CSV URL
+    responds to curl. Local/Vercel acquisition keeps its existing transport.
+    No browser impersonation, proxy, alternative source or TLS bypass is used.
+    """
+    transport = os.environ.get('BRENT_FRED_TRANSPORT', 'urllib')
+    if transport == 'urllib':return _fetch(url)
+    if transport != 'curl':raise ValueError('Unsupported FRED transport')
+    try:
+        result = subprocess.run(['curl', '--silent', '--show-error', '--location',
+            '--proto', '=https', '--proto-redir', '=https', '--connect-timeout', '10',
+            '--max-time', '30', '--write-out', '\n%{http_code}', url],
+            capture_output=True, timeout=35, check=False)
+    except subprocess.TimeoutExpired:
+        raise TimeoutError('FRED curl process timeout') from None
+    body, separator, status = result.stdout.rpartition(b'\n')
+    if result.returncode == 28:raise TimeoutError('FRED curl transfer timeout')
+    if result.returncode != 0:raise URLError('FRED curl connection failed')
+    if not separator or not status.isdigit():raise ValueError('Invalid FRED HTTP status')
+    code = int(status)
+    if code != 200:raise HTTPError(url, code, 'FRED CSV HTTP error', None, None)
+    return body
+
+
 def parse_fred(body: bytes, variable: str, series_id: str) -> pd.DataFrame:
     data = pd.read_csv(io.BytesIO(body), na_values=".")
     if data.shape[1] != 2 or data.columns[1] != series_id:
@@ -91,8 +119,9 @@ def _download_one(variable: str, spec: dict, config: dict, cache_dir: Path) -> t
                 "published_at_known": False, "historical_vintages": False}
     if provider == "fred":
         url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}&cosd={start}&coed={end}"
-        body = _fetch(url)
+        body = _fetch_fred(url)
         frame = parse_fred(body, variable, series_id)
+        metadata['transport'] = os.environ.get('BRENT_FRED_TRANSPORT', 'urllib')
     elif provider == "opec":
         url = series_id
         body = _fetch(url)
