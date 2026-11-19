@@ -60,10 +60,15 @@ jobs:
         if: failure()
         run: |
           # Only HTTP codes/exit codes are printed; no response bodies or headers.
-          for host in fred.stlouisfed.org api.stlouisfed.org; do
+          for target in graph_csv api_observations; do
+            if [ "$target" = graph_csv ]; then
+              url='https://fred.stlouisfed.org/graph/fredgraph.csv?id=DCOILBRENTEU&cosd=2000-01-01&coed=2026-11-18'
+            else
+              url='https://api.stlouisfed.org/fred/series/observations?series_id=DCOILBRENTEU&file_type=json'
+            fi
             for family in --ipv4 --ipv6; do
-              code=$(curl "$family" --silent --output /dev/null --connect-timeout 5 --max-time 8 --write-out '%{http_code}' "https://$host/") && result=0 || result=$?
-              echo "FRED connectivity host=$host family=$family http=$code curl_exit=$result"
+              code=$(curl "$family" --silent --output /dev/null --connect-timeout 5 --max-time 8 --write-out '%{http_code}' "$url") && result=0 || result=$?
+              echo "FRED connectivity endpoint=$target family=$family http=$code curl_exit=$result"
             done
           done
       # No upload-artifact or data caches: this GitHub repository is public.
