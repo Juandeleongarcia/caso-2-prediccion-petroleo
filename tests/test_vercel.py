@@ -36,7 +36,7 @@ class VercelPackage(unittest.TestCase):
         self.assertIn('3.13.7',versions)
         self.assertNotIn('3.14.8',versions)
         self.assertEqual((folder/'.python-version').read_text().strip(),'3.13')
-        lines=[line.strip() for line in (folder/'requirements.txt').read_text().splitlines()
+        lines=[line.strip() for line in (folder/'requirements-linux.txt').read_text().splitlines()
                if line.strip() and not line.startswith('#')]
         self.assertIn('--index-url https://pypi.org/simple',lines)
         self.assertFalse(any('extra-index' in line or 'unsafe-best-match' in line for line in lines))
@@ -72,6 +72,11 @@ class VercelPackage(unittest.TestCase):
         config=json.loads((folder/'vercel.json').read_text(encoding='utf-8'))
         self.assertFalse(config['git']['deploymentEnabled'])
         self.assertFalse((folder/'public').exists())
+        # Other/static-build installs root requirements.txt with uv's default
+        # interpreter before the Python function builder can select 3.13.
+        self.assertFalse((folder/'requirements.txt').exists())
+        self.assertTrue((folder/'requirements-linux.txt').is_file())
+        self.assertNotIn('installCommand',config)
 
     def test_only_runtime_closure_public_assets_and_trusted_registries_packaged(self):
         with tempfile.TemporaryDirectory(dir=ROOT/'artifacts/local') as folder:
@@ -88,6 +93,8 @@ class VercelPackage(unittest.TestCase):
             for name in ['src/oil_forecast/models.py','src/oil_forecast/preprocessing.py','web/backend.py']:
                 self.assertEqual((target/name).read_bytes(),(ROOT/name).read_bytes().replace(b'\r\n',b'\n'))
             self.assertFalse((target/'poetry.lock').exists())
+            self.assertFalse((target/'requirements.txt').exists())
+            self.assertTrue((target/'requirements-linux.txt').is_file())
             config=tomllib.loads((target/'pyproject.toml').read_text(encoding='utf-8'))
             self.assertEqual(config['project']['requires-python'],'>=3.13,<3.14')
             with self.assertRaises(ValueError):prepare(target)

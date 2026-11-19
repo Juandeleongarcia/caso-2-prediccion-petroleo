@@ -10,7 +10,7 @@ import tempfile
 ROOT=Path(__file__).resolve().parents[1]
 TEMPLATE=ROOT/'deployment/vercel'
 FRONTEND=['index.html','style.css','app.mjs','domain.mjs','vendor/plotly.min.js','vendor/LICENSE.plotly.txt']
-TEMPLATE_FILES=['api/forecast.py','requirements.txt','vercel.json','.python-version',
+TEMPLATE_FILES=['api/forecast.py','requirements-linux.txt','vercel.json','.python-version',
                 'build.mjs','verify_runtime.py','Dockerfile.check','constraints-linux.txt',
                 '.vercelignore','.dockerignore','README.md','pyproject.toml','uv.lock']
 

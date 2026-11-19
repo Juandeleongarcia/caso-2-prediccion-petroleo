@@ -28,7 +28,9 @@ Las carpetas de modelos, frozen, dashboard y live se fijan bajo el runtime tempo
 
 ## Verificación y límites
 
-Las cinco dependencias directas conservan sus versiones científicas. Python queda limitado a >=3.13,<3.14 en pyproject.toml, además de .python-version=3.13. requirements.txt mantiene compatibilidad con el instalador uv pip; pyproject.toml y uv.lock cubren el instalador uv sync. Las restricciones se mantienen sincronizadas mediante pruebas.
+Las cinco dependencias directas conservan sus versiones científicas. Python queda limitado a >=3.13,<3.14 en pyproject.toml, además de .python-version=3.13. El backend se instala desde pyproject.toml y uv.lock. requirements-linux.txt se reserva a verificaciones manuales/Docker; no debe renombrarse a requirements.txt en esta raíz.
+
+Con CLI65.17.0, el builder estático @vercel/static-build28.0.1 detectaba requirements.txt y llamaba a runPipInstall antes del selector Python del backend. Ese helper invoca uv pip install --target sin --python y puede usar el intérprete3.14 del sistema, ignorando el pin del proyecto en esa ruta. La corrección retira ese disparador, sin overrides globales de installCommand ni cambios de dependencias. El selector oficial @vercel/python-analysis0.15.3 elige3.13 para api/forecast.py. Se verificó la rama estática antes/después con los paquetes oficiales de esa CLI; no es un despliegue Linux validado.
 
 PyTorch CPU se descarga por su URL oficial exacta de CPython3.13/manylinux x86_64 con SHA256, idéntico al registrado en poetry.lock científico. El resto procede de PyPI. No se utiliza un extra-index global: con la estrategia first-index de uv, el índice CPU ocultaba filelock==4.2.12 de PyPI e impedía resolver. No se cambia PyTorch ni se desactiva la protección contra confusión de dependencias.
 

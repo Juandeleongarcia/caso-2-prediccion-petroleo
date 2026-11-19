@@ -14,7 +14,7 @@ Actualizar la pantalla después del push y seleccionar manualmente:
 | Framework Preset | **Other**, aunque se detecte Python |
 | Build Command | **node build.mjs** |
 | Output Directory | **public** |
-| Install Command | Automático/sin override; dependencias Python en pyproject.toml + uv.lock y requirements.txt compatible |
+| Install Command | Automático/sin override; backend desde pyproject.toml + uv.lock. No ejecutar pip/uv desde el instalador estático |
 | Include source files outside Root Directory | Desactivado: el paquete es autónomo |
 | Python | 3.13, fijado en .python-version y >=3.13,<3.14 en pyproject.toml del paquete |
 | Plan | Hobby; no activar Pro/trial ni recursos de pago |
@@ -59,6 +59,20 @@ Las fuentes se conservan en web/, src/oil_forecast/ y deployment/vercel/. script
 La comparación de pruebas y recursos de las fases previas está en web/VERCEL_LARGE_FUNCTIONS.md. Las restricciones de artefactos y derechos se mantienen aunque el repositorio de modelos sea privado.
 
 ## Verificación de esta integración
+
+### Corrección de la instalación estática previa (posterior a d224d3a)
+
+El segundo fallo no era el mismo conflicto de índices. CLI65.17.0 incluye @vercel/static-build28.0.1 y @vercel/build-utils15.4.1. Con preset Other y buildCommand, el builder estático detecta requirements.txt en la raíz y llama a runPipInstall. Ese helper ejecuta uv pip install --target sin seleccionar --python: puede usar3.14 antes de que intervenga @vercel/python32.0.1, aunque el proyecto restrinja3.13. Añadir otra restricción al mismo pyproject no corrige esa instalación separada.
+
+Se renombra requirements.txt a requirements-linux.txt en plantilla y snapshot. El archivo conserva exactamente las dependencias y el SHA256 del wheel CPU; queda para Docker/comprobaciones manuales. La instalación de la función sigue usando pyproject.toml y uv.lock, sin installCommand personalizado, conservando el empaquetado Large Functions. No se cambia PyTorch, las redes ni la web.
+
+Evidencia: con el builder estático oficial de esa CLI se interceptó la llamada a pip para impedir instalaciones: el paquete anterior la invoca; el corregido compila los siete assets sin invocarla. En Windows se adaptó exclusivamente el lanzador del comando Node, ejecutando el build.mjs real. El analizador oficial0.15.3 descubre los archivos del paquete desde api/ y selecciona3.13, tanto con la raíz del repositorio como con la raíz autónoma. Las pruebas y sus paquetes de diagnóstico quedan en artifacts/local/vercel-python-selection, excluido de Git. No equivalen a ejecutar un build remoto ni a medir memoria Linux.
+
+Verificación de esta corrección: 11/11 pruebas Python de Vercel (14,979 s), 6/6 JavaScript, pip check y diff sin errores. Incluye arranque API e inferencia CPU idéntica a Streamlit en las tres redes, persistencia y horizontes5/63/252. Se comprobó uv sync --locked --dry-run para Linux y la instalación cruzada existente: sus34versiones coinciden con el lock sin cambios. Los163archivos protegidos,92entradas del inventario y21archivos de presentación conservan sus hashes. No se repite la batería científica completa de237pruebas de la corrección previa porque no cambia su código ni sus dependencias. Quedan sin verificar instalación/imports/memoria nativos Linux, autenticación remota de artefactos y despliegue real.
+
+Para el siguiente intento: Root Directory deployment/vercel-app, Other, build node build.mjs, output public; eliminar overrides de Install Command (no configurar uv pip install), guardar y crear un despliegue del nuevo commit de main sin reutilizar la caché. La opción Redeploy de d224d3a reutiliza ese commit y no incorpora la corrección. Verificar en Source el nuevo SHA y en los logs la selección Python3.13 desde .python-version; no continuar dando por válida la inferencia si /api/ready devuelve503. Los permisos, origen de ZIP y credenciales de la tabla siguen siendo requisitos independientes.
+
+Código oficial: [rama del builder estático](https://github.com/vercel/vercel/blob/main/packages/static-build/src/index.ts), [helper runPipInstall](https://github.com/vercel/vercel/blob/main/packages/build-utils/src/fs/run-user-scripts.ts) y [selección del runtime Python](https://vercel.com/docs/functions/runtimes/python/python-version). La reproducción local utilizó las versiones npm exactas indicadas, no únicamente la rama main de las referencias.
 
 ### Corrección del instalador de Vercel
 
