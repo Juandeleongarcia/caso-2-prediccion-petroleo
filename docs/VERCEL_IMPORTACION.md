@@ -4,6 +4,29 @@
 
 **Plan de cierre vigente:** [PLAN_DESPLIEGUE.md](PLAN_DESPLIEGUE.md). Mantener frontend y PyTorch en Vercel; cerrar recursos/permisos y ejecutar la aceptación antes de plantear otro backend. Las secciones siguientes conservan el diagnóstico y evidencias de las revisiones previas.
 
+## Recuperar el despliegue del canal live (19/11/2026)
+
+Causa comprobada en GitHub main7f21279: deployment/vercel-app/vercel.json y su plantilla deployment/vercel/vercel.json contienen git.deploymentEnabled=false. Según la [configuración oficial de Vercel](https://vercel.com/docs/project-configuration/git-configuration), esto desactiva todos los despliegues automáticos por Git. Ese bloqueo se introdujo durante la preparación para impedir despliegues sin autorización; no es un fallo de Hugging Face. GitHub tiene los commits recientes y checks de Actions correctos, sin checks de Vercel en7f21279. La API pública todavía informa automatic_refresh=false y adquisición2026-11-11T21:08:21.056273+00:00.
+
+La corrección local cambia plantilla y snapshot a `{"git":{"deploymentEnabled":{"main":true,"**":false}}}`, sincroniza los hashes y actualiza las pruebas. Vercel permite una rama si al menos una regla coincidente es true, por lo que main se permite aunque también coincida con **. No se han inspeccionado ajustes privados de la cuenta Vercel, cambiado secretos ni iniciado despliegues. Este cambio requiere commit/push autorizado; hacerlo puede disparar un despliegue Production.
+
+### Desplegar ahora el código que ya existe en GitHub
+
+1. En brent-forecast → Settings → Git, confirmar el repositorio Juandeleongarcia/caso-2-prediccion-petroleo conectado. Revisar que la integración Vercel GitHub App mantiene acceso a ese repositorio. No desconectar/reimportar por defecto.
+2. En Settings → Environments → Production, confirmar la rama de seguimiento main (según el panel, puede aparecer como Production Branch en Git).
+3. Settings → Build and Deployment: Root Directory deployment/vercel-app; preset Other; Build Command node build.mjs; Output Directory public. Mantener detección automática de instalación; no añadir requirements.txt ni un comando pip personalizado. Revisar Ignored Build Step: dejar comportamiento automático, sin un comando personalizado que devuelva0 e ignore siempre. Si existe Skip deployment para proyectos sin cambios, desactivarlo durante este intento.
+4. Confirmar que las cuatro variables live ya guardadas pertenecen a Production: BRENT_LIVE_ENABLED=1, BRENT_LIVE_ACCESS_AUTHORIZED=1, BRENT_LIVE_REPO_ID=Juaandeleoon/caso-2-prediccion-petroleo, BRENT_LIVE_POLL_SECONDS=300. Mantener HF_TOKEN de lectura, autorizaciones públicas acreditadas, pins y hashes originales. BRENT_ALLOW_PROVIDER_ACCESS=0 mantiene la adquisición en Actions. No cambiar BRENT_DATA_REVISION para perseguir cada snapshot: el canal live resuelve main de HF y ancla cada lectura a un SHA completo con integridad.
+5. Deployments → **Create Deployment** → introducir **7f21279a8bf15b937e576a0d357dd615980be3ba**, rama main/entorno Production. Alternativamente introducir main o su URL para seleccionar la punta vigente. Verificar Source antes de confirmar **Create Deployment**. Este mecanismo manual oficial permite desplegar un Git reference aunque los despliegues automáticos estén interrumpidos. No usar Redeploy del32737f0: reutiliza el código antiguo. Si solo se ofrece Preview, comprobar la rama Production y promover el nuevo despliegue correcto; no promover uno que carezca de las variables Production.
+6. Esperar Ready y comprobar que el despliegue nuevo es el que sirve brent-forecast.vercel.app; en los logs verificar Python3.13 y Source correcto. Si la interfaz ofrece caché de build, desmarcar su reutilización para este intento de diagnóstico.
+
+### Comprobar que está leyendo los snapshots publicados
+
+Abrir /api/ready:200 e inference_loaded=true donde se exponga en /api/health. Abrir /api/models: automatic_refresh=true, data_refresh_mode=github_actions y refresh.status=current tras una comprobación satisfactoria. Comparar refresh.published_commit, refresh.snapshot_id y data_updated_at con el SHA/snapshot de la ejecución published_and_verified de Actions y el puntero privado live/latest.json. Si hay un fallo, conservar los controles y revisar refresh.status, refresh.last_attempt_at y los logs del servidor sin imprimir secretos: Ready por sí solo puede indicar inferencia con el bundle anterior.
+
+La comprobación es bajo demanda, como máximo una vez cada300s por instancia; volver a consultar tras ese intervalo y recargar la web. Una adquisición nueva no garantiza una cotización/origen nuevos si no hay observaciones admisibles. Las cinco secciones conservan evaluación histórica congelada; solo la ventana operativa y la fecha de adquisición cambian. No hay que redesplegar cada día ni actualizar pins de pesos para consumir live.
+
+Una vez autorizada/publicada la corrección de git.deploymentEnabled, los siguientes pushes a main podrán generar despliegues automáticos. La actualización diaria de datos es independiente y no hace pushes a GitHub. Las restricciones y recuentos descritos a continuación son evidencias históricas de fases previas, no el estado remoto actual acreditado.
+
 ## Auditoría tras configurar Models y subir los ZIP (19/11/2026)
 
 El propietario confirma ambos ZIP subidos al Models privado, HF_TOKEN/BRENT_DATA_REPO_ID configurados en Production y BRENT_DATA_REVISION=6b5f190dc22393ee91d9a1bffe9c17c27672bab1, además de un despliegue nuevo. Esa revisión tiene40caracteres hexadecimales; el contenido remoto y sus hashes no se han comprobado por descarga autenticada, porque esta sesión no tiene HF_TOKEN ni caché oficial de credenciales. No se solicitan tokens por chat. El usuario confirma que los permisos públicos siguen pendientes y BRENT_PUBLIC_ACCESS_AUTHORIZED=0.

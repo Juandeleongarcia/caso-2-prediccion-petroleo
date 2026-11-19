@@ -59,7 +59,7 @@ class VercelPackage(unittest.TestCase):
         self.assertEqual(locked['filelock']['version'],'4.2.12')
         self.assertEqual(locked['filelock']['source'],{'registry':'https://pypi.org/simple'})
 
-    def test_git_import_snapshot_tracks_current_sources_and_has_automatic_deploys_disabled(self):
+    def test_git_import_snapshot_tracks_current_sources_and_allows_only_main_deploys(self):
         folder=ROOT/'deployment/vercel-app'
         manifest=json.loads((folder/'source_manifest.json').read_text(encoding='utf-8'))
         from scripts.prepare_vercel import TEMPLATE_FILES
@@ -72,7 +72,7 @@ class VercelPackage(unittest.TestCase):
         for name,sha in manifest['files'].items():
             self.assertEqual(hashlib.sha256((folder/name).read_bytes()).hexdigest(),sha,name)
         config=json.loads((folder/'vercel.json').read_text(encoding='utf-8'))
-        self.assertFalse(config['git']['deploymentEnabled'])
+        self.assertEqual(config['git']['deploymentEnabled'],{'main':True,'**':False})
         self.assertFalse((folder/'public').exists())
         # Other/static-build installs root requirements.txt with uv's default
         # interpreter before the Python function builder can select 3.13.
@@ -106,7 +106,7 @@ class VercelPackage(unittest.TestCase):
             target=Path(folder)/'project';prepare(target)
             config=json.loads((target/'vercel.json').read_text())
             self.assertTrue(config['fluid']);self.assertEqual(config['functions']['api/forecast.py']['maxDuration'],300)
-            self.assertFalse(config['git']['deploymentEnabled'])
+            self.assertEqual(config['git']['deploymentEnabled'],{'main':True,'**':False})
             self.assertEqual(config['outputDirectory'],'public')
             self.assertEqual(len(config['rewrites']),9)
             env=dict(os.environ,VERCEL_SUPPORT_LARGE_FUNCTIONS='1',HF_TOKEN='dummy-not-an-actual-token')

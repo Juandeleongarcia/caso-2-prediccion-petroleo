@@ -3,7 +3,10 @@
   "framework": null,
   "fluid": true,
   "git": {
-    "deploymentEnabled": false
+    "deploymentEnabled": {
+      "main": true,
+      "**": false
+    }
   },
   "buildCommand": "node build.mjs",
   "outputDirectory": "public",

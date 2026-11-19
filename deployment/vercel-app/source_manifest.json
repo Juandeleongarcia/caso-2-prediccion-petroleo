@@ -38,7 +38,7 @@
     "web/vercel_runtime.py": "74e27b6c4bec23eb10a7b232edfdf070c1325b6cded405fb20eede8d7fba3bff",
     "api/forecast.py": "4f02f361eeac13ee34df3f8fdf1a0419e120e819b49c7a5ef9bc23aa6445d0b2",
     "requirements-linux.txt": "41ed6fb55f9cdb895f4ce2fef99fc1d1a573811e6df7fb212fcb4a109e2fbaf5",
-    "vercel.json": "fb0cee35fe1c9ebed408e650121de7b12f99ab89ffbebc21a6284f68b12390f7",
+    "vercel.json": "41380f2a8452892d5a402fca70ef9ee99f8ffc5187b8c1bfc1da9c51c78a52fd",
     ".python-version": "02e735b3dfe1c32833eb550b7ff8ffa17f5f2bc3fa1e7bae61a8f5a3883ce398",
     "build.mjs": "0116bfe12e6087aa5f3e2e2968e4cc9254e0d31191b51a4a3ef26f370e0b0985",
     "verify_runtime.py": "1e2117bb044327941cdd8247e8ac2a7f31aaddf6c4ec154ba2da91b082212961",
@@ -46,7 +46,7 @@
     "constraints-linux.txt": "cdf863e5d2257ff57241798402aff22f743b824996e55fbc332160086d7b09b3",
     ".vercelignore": "eb5aee50fdcf46a1e442116388a150ddb56af90d1c98ca8baf193e2cff27e90c",
     ".dockerignore": "8ea31d382785d819a744a61023172dd6b982256a2f9de3b3e53583c2629c9014",
-    "README.md": "8c0f8aabcaf2315d0ef28f397f092e1c2a72cfe4d4a5a6fb6e8fe0b772e4675d",
+    "README.md": "db4a1123bac6d8ae3c17f467b222a55588bd6f023617a42d5076b364653e1bdc",
     "pyproject.toml": "bf8277c73fc89a2b61896f9dc9208af19c011c3f1831c3ef974a52215a751ee2",
     "uv.lock": "a8be392a87161af5e2c7d5e0c95a1765a007cad01dc9829894dc72c75ca16bf7"
   }

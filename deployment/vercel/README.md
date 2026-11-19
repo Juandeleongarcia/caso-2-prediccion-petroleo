@@ -6,7 +6,7 @@ La copia autónoma se genera mediante `scripts/prepare_vercel.py --output deploy
 
 La carpeta `deployment/vercel` contiene la plantilla; la carpeta `deployment/vercel-app` con source_manifest.json contiene el proyecto importable. Git deduplica los blobs idénticos; se conserva una carpeta autónoma para que el build de Vercel no dependa de rutas externas o de Poetry científico.
 
-El frontend sale por CDN y las nueve rutas API van a api/forecast.py, sin iniciar Streamlit/Waitress. Se desactivan los despliegues automáticos por Git con git.deploymentEnabled=false. El push de esta integración no autoriza pulsar Deploy; el primer despliegue manual necesita revisión y autorización separadas.
+El frontend sale por CDN y las nueve rutas API van a api/forecast.py, sin iniciar Streamlit/Waitress. La configuración permite despliegues automáticos desde main y los bloquea en las demás ramas mediante git.deploymentEnabled={"main":true,"**":false}. Publicar esta configuración en main puede iniciar un despliegue Production si la integración Git está activa; debe autorizarse antes de hacer push. Los snapshots live de datos se actualizan sin redeploy diario.
 
 ## Variables en Preview y Production
 
