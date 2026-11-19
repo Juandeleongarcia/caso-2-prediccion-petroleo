@@ -1,6 +1,7 @@
 """Concrete code-only package, WSGI routing and frozen CPU inference without remote calls."""
 import hashlib
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -11,6 +12,7 @@ import tempfile
 import tomllib
 import unittest
 from unittest.mock import patch
+from urllib.parse import urlparse
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
@@ -120,7 +122,9 @@ class VercelPackage(unittest.TestCase):
         base={'VERCEL_SUPPORT_LARGE_FUNCTIONS':'1','BRENT_PUBLIC_ACCESS_AUTHORIZED':'1','HF_TOKEN':'dummy'}
         self.assertEqual(settings(base)['BRENT_HF_REVISION'],MODEL_REVISION)
         for extra in [{'VERCEL_SUPPORT_LARGE_FUNCTIONS':'0'},{'BRENT_PUBLIC_ACCESS_AUTHORIZED':'0'},
-                      {'HF_TOKEN':''},{'BRENT_HF_REVISION':'main'},{'BRENT_MANIFEST_SHA256':'invalid'},
+                      {'HF_TOKEN':''},{'BRENT_HF_REVISION':'main'},
+                      {'BRENT_HF_REVISION':'b9ad781cd90e1adcb08009358fca143e0bf0931'},
+                      {'BRENT_MANIFEST_SHA256':'invalid'},
                       {'BRENT_MODEL_SOURCE':'local'},{'BRENT_RUNTIME_DIR':'relative/path'}]:
             with self.subTest(extra=extra),self.assertRaises(ValueError):settings(base|extra)
         with patch('web.vercel_runtime.tempfile.gettempdir',return_value=str(ROOT/'artifacts/local')):
@@ -132,9 +136,28 @@ class VercelPackage(unittest.TestCase):
         self.assertEqual(request(app,'health',method='POST')[0],405)
         self.assertEqual(request(app,'health','__brent_endpoint=predict')[0],400)
         self.assertEqual(request(app,'../../secrets')[0],404)
-        with patch.dict(os.environ,{'HF_TOKEN':'private-value','BRENT_PUBLIC_ACCESS_AUTHORIZED':'0'}):
+        with patch.dict(os.environ,{'VERCEL_SUPPORT_LARGE_FUNCTIONS':'1',
+                                   'HF_TOKEN':'private-value','BRENT_PUBLIC_ACCESS_AUTHORIZED':'0'}):
             code,body=request(app,'ready');self.assertEqual(code,503)
+            self.assertEqual(body['code'],'public_access_not_authorized')
             self.assertNotIn('private-value',json.dumps(body))
+
+    def test_configuration_failure_codes_and_cooldown_never_expose_values(self):
+        base={'VERCEL_SUPPORT_LARGE_FUNCTIONS':'1','BRENT_PUBLIC_ACCESS_AUTHORIZED':'1',
+              'BRENT_MODEL_SOURCE':'hf','HF_TOKEN':'not-a-real-secret'}
+        for changes,expected in [({'VERCEL_SUPPORT_LARGE_FUNCTIONS':'0'},'large_functions_disabled'),
+                                 ({'BRENT_PUBLIC_ACCESS_AUTHORIZED':'0'},'public_access_not_authorized'),
+                                 ({'HF_TOKEN':''},'model_authentication_missing'),
+                                 ({'BRENT_HF_REVISION':'private-branch-value'},'model_configuration_invalid')]:
+            app=VercelApplication()
+            with self.subTest(expected=expected),patch.dict(os.environ,base|changes,clear=True),self.assertLogs('web.vercel_runtime',level='WARNING') as logs:
+                code,body=request(app,'ready')
+                self.assertEqual(code,503);self.assertEqual(body['code'],expected)
+                self.assertEqual(request(app,'ready')[1]['code'],expected)
+                combined=json.dumps(body)+' '.join(logs.output)
+                self.assertNotIn('not-a-real-secret',combined)
+                self.assertNotIn('private-branch-value',combined)
+                self.assertFalse(request(app,'health')[1]['inference_loaded'])
 
 
 class VercelResources(unittest.TestCase):
@@ -166,6 +189,62 @@ class VercelResources(unittest.TestCase):
                     self.assertEqual(body['forecast'][key],expected[key])
         self.assertEqual(request(self.app,'refresh',method='POST')[0],403)
 
+    def test_empty_runtime_fetches_pinned_original_resources_then_runs_authentic_inference(self):
+        # Real original bytes; only HTTPS transport is replaced. No publication or
+        # real token: this isolated fixture is not a grant of production rights.
+        for name in ['brent-frozen-v1','brent-dashboard-v1','models']:
+            target=(self.runtime/name).resolve()
+            self.assertTrue(target.is_relative_to((ROOT/'artifacts/local').resolve()))
+            shutil.rmtree(target)
+        calls=[]
+        data_revision='d'*40
+        def response(req,timeout):
+            parsed=urlparse(req.full_url)
+            self.assertEqual(parsed.scheme,'https');self.assertEqual(parsed.hostname,'huggingface.co')
+            self.assertFalse(parsed.query);self.assertFalse(parsed.fragment)
+            self.assertEqual(req.get_header('Authorization'),'Bearer dummy-not-real')
+            self.assertNotIn('dummy-not-real',req.full_url)
+            name=Path(parsed.path).name
+            revision=parsed.path.split('/resolve/')[1].split('/')[0]
+            if name.endswith('.zip'):
+                self.assertEqual(revision,data_revision)
+                payload=(ROOT/'artifacts/releases'/name).read_bytes()
+            else:
+                self.assertEqual(revision,MODEL_REVISION)
+                payload=(ROOT/'artifacts/local/hf-minimal-v1'/name).read_bytes()
+            calls.append((revision,name))
+            stream=io.BytesIO(payload);stream.geturl=lambda:req.full_url
+            return stream
+        with patch.dict(os.environ,{'BRENT_DATA_REPO_ID':'Juaandeleoon/caso-2-prediccion-petroleo',
+                                    'BRENT_DATA_REVISION':data_revision}),\
+             patch('web.vercel_runtime.ROOT',ROOT/'deployment/vercel-app'),\
+             patch('oil_forecast.artifacts.build_opener') as data_network,\
+             patch('web.backend.build_opener') as model_network:
+            data_network.return_value.open.side_effect=response
+            model_network.return_value.open.side_effect=response
+            code,ready=request(self.app,'ready')
+            self.assertEqual(code,200);self.assertEqual(ready['source'],'hf')
+            self.assertEqual(len(calls),8)  # Two ZIPs and six minimal model files.
+            study=self.app.delegate.study
+            from oil_forecast.app_data import load_services,forecast_for_model
+            original=load_services(ROOT/'artifacts/local/brent-frozen-v1')
+            for model in ['RNN','LSTM','GRU','persistence']:
+                expected=forecast_for_model(original,study.data['window'],model,study.updated)
+                network=study.services['LSTM' if model=='persistence' else model]._model
+                with patch.object(network,'forward',wraps=network.forward) as forward:
+                    for horizon in [5,63,252]:
+                        code,body=request(self.app,'predict',f'model={model}&horizon={horizon}')
+                        self.assertEqual(code,200)
+                        self.assertEqual(body['forecast']['forecasts'],expected['forecasts'])
+                        self.assertEqual(body['forecast']['origin_date'],expected['origin_date'])
+                    if model!='persistence':
+                        self.assertGreaterEqual(forward.call_count,3)  # Real neural execution, not saved pairs.
+            for endpoint in ['models','overview','comparison','evaluation']:
+                self.assertEqual(request(self.app,endpoint)[0],200)
+            self.assertTrue(request(self.app,'health')[1]['inference_loaded'])
+            self.assertEqual(len(calls),8)  # Warm requests reuse verified resources.
+            self.assertEqual(request(self.app,'refresh',method='POST')[0],403)
+
     def test_missing_historical_data_returns_503_without_fabricating_or_falling_back(self):
         removed=(self.runtime/'brent-dashboard-v1').resolve()
         self.assertTrue(removed.is_relative_to((ROOT/'artifacts/local').resolve()))
@@ -174,18 +253,30 @@ class VercelResources(unittest.TestCase):
             downloader.side_effect=FileNotFoundError('private test URL')
             code,body=request(self.app,'ready')
         self.assertEqual(code,503);self.assertNotIn('private test URL',json.dumps(body))
+        self.assertEqual(body['code'],'history_artifacts')
         self.assertFalse(request(self.app,'health')[1]['inference_loaded'])
+
+    def test_missing_history_source_has_specific_safe_code(self):
+        removed=(self.runtime/'brent-dashboard-v1').resolve()
+        self.assertTrue(removed.is_relative_to((ROOT/'artifacts/local').resolve()))
+        shutil.rmtree(removed)
+        with patch.dict(os.environ,{'BRENT_DATA_REPO_ID':'','BRENT_DATA_REVISION':''}):
+            code,body=request(self.app,'ready')
+        self.assertEqual(code,503);self.assertEqual(body['code'],'history_source_missing')
 
     def test_corrupt_registered_data_is_rejected_without_replacing_originals(self):
         path=self.runtime/'brent-frozen-v1/brent_history.csv';path.write_bytes(b'corrupt')
-        self.assertEqual(request(self.app,'predict')[0],503)
+        code,body=request(self.app,'predict')
+        self.assertEqual(code,503);self.assertEqual(body['code'],'history_artifacts')
         self.assertEqual(path.read_bytes(),b'corrupt')
 
     def test_hf_unavailable_preserves_existing_data_and_never_uses_other_weights(self):
         original=hashlib.sha256((self.runtime/'brent-frozen-v1/checkpoints.pt').read_bytes()).hexdigest()
-        with patch('web.backend.download_minimal',side_effect=ValueError('signed-private-token')):
+        with patch('web.backend.download_minimal',side_effect=ValueError('signed-private-token')),self.assertLogs('web.vercel_runtime',level='WARNING') as logs:
             code,body=request(self.app,'predict')
         self.assertEqual(code,503);self.assertNotIn('signed-private-token',json.dumps(body))
+        self.assertEqual(body['code'],'model_artifacts')
+        self.assertNotIn('signed-private-token',' '.join(logs.output))
         self.assertEqual(hashlib.sha256((self.runtime/'brent-frozen-v1/checkpoints.pt').read_bytes()).hexdigest(),original)
 
     def test_provider_failure_retains_verified_window_reference_and_predictions(self):
