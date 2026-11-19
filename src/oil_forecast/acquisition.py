@@ -9,9 +9,22 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.request import Request, urlopen
+from urllib.error import HTTPError, URLError
 from xml.etree import ElementTree
 
 import pandas as pd
+
+
+def safe_acquisition_error(error: Exception) -> dict:
+    """Only categories/codes; exception strings may include credentials or URLs."""
+    details={'error_type':type(error).__name__}
+    if isinstance(error,HTTPError):details.update(reason='http_error',http_status=error.code)
+    elif isinstance(error,TimeoutError) or (isinstance(error,URLError) and isinstance(error.reason,TimeoutError)):
+        details['reason']='timeout'
+    elif isinstance(error,URLError):details['reason']='connection_or_tls_error'
+    elif isinstance(error,ValueError):details['reason']='schema_or_observation_invalid'
+    else:details['reason']='provider_error'
+    return details
 
 
 def sha256(path: Path) -> str:
@@ -135,6 +148,7 @@ def download_snapshot(config: dict, directory: Path, cache_dir: Path) -> None:
                 metadata[key] = info
             except Exception as error:
                 metadata[key] = {"status": "unavailable", "error": f"{type(error).__name__}: {error}",
+                                 "diagnostic":safe_acquisition_error(error),
                                  "provider": specs[key]["provider"], "id": specs[key]["id"]}
     required_failures = [key for key in fred if specs[key]["required"] and metadata[key]["status"] != "ok"]
     for key, spec in specs.items():
@@ -150,6 +164,7 @@ def download_snapshot(config: dict, directory: Path, cache_dir: Path) -> None:
             metadata[key] = info
         except Exception as error:
             metadata[key] = {"status": "unavailable", "error": f"{type(error).__name__}: {error}",
+                             "diagnostic":safe_acquisition_error(error),
                              "provider": spec["provider"], "id": spec["id"]}
     manifest = {"downloaded_at": datetime.now(timezone.utc).isoformat(), "start": config["start"],
                 "end": config["end"], "sources": metadata,

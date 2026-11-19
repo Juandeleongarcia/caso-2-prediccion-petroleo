@@ -3,6 +3,7 @@ import copy
 from datetime import datetime,timezone
 import hashlib
 import io
+from contextlib import redirect_stdout
 import json
 from pathlib import Path
 import sys
@@ -10,6 +11,7 @@ import tempfile
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
+from urllib.error import HTTPError
 
 import pandas as pd
 
@@ -19,7 +21,8 @@ from oil_forecast.acquisition import sha256,validate_observations
 from oil_forecast.temporal import apply_availability,build_features,build_target
 from oil_forecast.live_data import build_daily,validate_live,merge_observations
 from oil_forecast.live_hub import LiveHubController,HubReader,fetch_latest,pointer_for,FILES
-from scripts.update_live_data import publish,run
+from scripts.update_live_data import publish,run,main
+from oil_forecast.acquisition import safe_acquisition_error
 
 MODEL_SHA='a'*64
 
@@ -182,6 +185,34 @@ class LiveContracts(unittest.TestCase):
         self.assertIn('workflow_dispatch:',workflow);self.assertIn('cron:',workflow)
         self.assertIn('contents: read',workflow);self.assertNotIn('uses: actions/upload-artifact',workflow)
         self.assertNotIn('run_final_evaluation.py',workflow)
+
+    def test_provider_error_diagnostics_exclude_urls_tokens_and_exception_strings(self):
+        error=HTTPError('https://private.example/?token=secret-value',503,'secret-value',{},None)
+        diagnostic=safe_acquisition_error(error)
+        self.assertEqual(diagnostic,{'error_type':'HTTPError','reason':'http_error','http_status':503})
+        self.assertNotIn('secret-value',json.dumps(diagnostic))
+
+    def test_failed_command_has_safe_stage_source_and_summary(self):
+        folder=self.directory/'run';raw=folder/'live-example/raw';raw.mkdir(parents=True)
+        (raw/'manifest.json').write_text(json.dumps({'sources':{'brent':{
+            'status':'unavailable','error':'https://private/?secret=hidden-token',
+            'diagnostic':{'error_type':'HTTPError','reason':'http_error','http_status':503}}}}))
+        summary=self.directory/'summary.md'
+        def failed(env,workdir,publish_requested,diagnostics):
+            diagnostics['stage']='provider_acquisition_and_dataset_build'
+            raise RuntimeError('hidden-token in a private exception')
+        output=io.StringIO()
+        with patch('scripts.update_live_data.run',side_effect=failed),\
+             patch.dict('os.environ',{'GITHUB_STEP_SUMMARY':str(summary)}),\
+             patch.object(sys,'argv',['update_live_data.py','--workdir',str(folder)]),\
+             redirect_stdout(output),self.assertRaises(SystemExit) as exit:
+            main()
+        self.assertEqual(exit.exception.code,1)
+        report=json.loads(output.getvalue())
+        self.assertEqual(report['stage'],'provider_acquisition_and_dataset_build')
+        self.assertEqual(report['sources']['brent']['http_status'],503)
+        self.assertFalse(report['publish_requested'])
+        self.assertNotIn('hidden-token',output.getvalue()+summary.read_text())
 
 
 if __name__=='__main__':unittest.main()
