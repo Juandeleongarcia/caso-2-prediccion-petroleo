@@ -56,5 +56,15 @@ jobs:
           args=()
           if [ "$PUBLISH_REQUESTED" = "true" ]; then args+=(--publish); fi
           python -B scripts/update_live_data.py --workdir "artifacts/local/actions-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" "${args[@]}"
+      - name: Diagnose official FRED connectivity after a failure (no credentials)
+        if: failure()
+        run: |
+          # Only HTTP codes/exit codes are printed; no response bodies or headers.
+          for host in fred.stlouisfed.org api.stlouisfed.org; do
+            for family in --ipv4 --ipv6; do
+              code=$(curl "$family" --silent --output /dev/null --connect-timeout 5 --max-time 8 --write-out '%{http_code}' "https://$host/") && result=0 || result=$?
+              echo "FRED connectivity host=$host family=$family http=$code curl_exit=$result"
+            done
+          done
       # No upload-artifact or data caches: this GitHub repository is public.
       # Only live/ receives private data; model/checkpoint paths are not operations.
