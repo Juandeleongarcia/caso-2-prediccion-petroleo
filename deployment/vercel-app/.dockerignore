@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+.vercel/
+.env
+.env.*
+reports/
+*.pt
+*.pth
+*.onnx
+*.zip
+data/
+artifacts/local/
+artifacts/releases/

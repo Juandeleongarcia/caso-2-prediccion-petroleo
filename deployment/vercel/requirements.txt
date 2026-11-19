@@ -1,0 +1,9 @@
+# Exact direct versions from the frozen scientific environment; independent deployment environment.
+--extra-index-url https://download.pytorch.org/whl/cpu
+-c constraints-linux.txt
+torch==2.15.0+cpu
+numpy==2.5.4
+pandas==3.1.0
+plotly==7.1.0
+# Needed only by authorized live refreshes, retained to preserve that function.
+yfinance==1.8.0

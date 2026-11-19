@@ -69,3 +69,9 @@
 *.ico    binary
 *.webp   binary
 *.svg    text eol=lf
+
+# Keep the importable snapshot byte-stable across Windows and Linux checkouts.
+/deployment/vercel-app/** text eol=lf
+# Preserve the upstream Plotly bundle, including whitespace inside shader strings.
+/web/frontend/vendor/plotly.min.js text eol=lf -whitespace
+/deployment/vercel-app/web/frontend/vendor/plotly.min.js text eol=lf -whitespace

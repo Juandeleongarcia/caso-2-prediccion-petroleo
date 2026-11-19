@@ -4,17 +4,25 @@ Proyecto individual del Caso 2 de Aprendizaje Automático de la UAX: comparació
 
 **Conclusión principal:** ninguna arquitectura neuronal supera a persistencia en el promedio de las tres semillas de test, en ninguno de los tres horizontes. LSTM-B/42 fue elegida exclusivamente en desarrollo; se mantiene como demostración de aprendizaje profundo y sus malos resultados se muestran expresamente. Los pesos, transformadores, predicciones y resultados originales permanecen congelados.
 
-**Aplicación principal:** `app.py`, con inferencia real CPU de RNN, LSTM y GRU, persistencia y cinco páginas. La entrega prevista es el repositorio junto con su demostración completa en local. El estudio está cerrado; actualizar observaciones no modifica los pesos. No se presenta como herramienta de predicción financiera fiable.
+**Aplicación original y respaldo:** `app.py`, con inferencia real CPU de RNN, LSTM y GRU, persistencia y cinco páginas. La entrega prevista es el repositorio junto con su demostración completa en local. El estudio está cerrado; actualizar observaciones no modifica los pesos. No se presenta como herramienta de predicción financiera fiable.
 
 **Estado de entrega:** revisión académica final del código y de la aplicación completa, publicada en la rama `main`. Los paquetes necesarios para ejecutar la aplicación completa están conservados localmente, fuera de Git. **Un clon por sí solo no incluye los modelos ni todos los gráficos**: necesita los dos ZIP originales desde una copia cuyo acceso y traslado estén autorizados. No hay descarga pública habilitada ni aplicación desplegada.
 
 Para revisar el trabajo: [datos y fuentes](#datos-y-fuentes), [metodología](#metodología-congelada), [resultados y cuatro métricas](#resultados-finales-de-test), [aplicación](#aplicación-brent-forecast--energy-intelligence) y [cumplimiento académico](#cumplimiento-del-enunciado-y-aclaración-docente). La [guía de publicación](docs/PUBLICACION.md) contiene inventario, exclusiones, permisos y pasos posteriores.
 
+**Prioridad técnica actual (19/11/2026):** presentación pausada y borradores conservados fuera de Git. La nueva [web HTML/CSS/JavaScript con API Python](web/README.md) funciona localmente con los modelos auténticos, mientras Streamlit permanece íntegro como respaldo. Arranque: `poetry run python -B web/server.py`; abrir <http://127.0.0.1:8765>. Se verificó en el navegador que el repositorio privado de Models contiene seis archivos en la revisión `b9ad781cd90e1adcb080009358fca143e0bf0931`; su descarga autenticada e integridad remota siguen pendientes. La integración publica únicamente código y documentación: no despliega, no reentrena ni distribuye artefactos restringidos. La guía de la web distingue permisos, autenticación y límites de Vercel.
+
+**Preparación del despliegue:** la [comparación actualizada del Prompt 17](web/DEPLOYMENT_COMPARISON.md) recomienda probar primero Vercel Hobby con PyTorch y Large Functions (beta de 5 GB), pendiente de validación remota. El wheel Linux supera el límite estándar de 500 MB, pero esa beta cambia la viabilidad por tamaño. ONNX también superó pruebas numéricas en CPU y Chrome; permanece como experimento local sin distribuir. La configuración existente continúa siendo de frontend estático y API separada, sin despliegue. Las pruebas de la fase anterior (226 Python y 6 JavaScript) se conservan; no se confunden con las nuevas comprobaciones numéricas.
+
+**Paquete Vercel integral (Prompt 18):** adaptador WSGI, Fluid, dependencias CPU mínimas y generador de un proyecto aislado sin artefactos privados. La [guía concreta de Vercel](web/VERCEL_LARGE_FUNCTIONS.md) recoge las variables, el paquete local vercel-large-ready y las verificaciones pendientes de Linux, acceso remoto y permisos. Regresión local: **235/235 pruebas Python y 6/6 JavaScript**; no se ha desplegado.
+
+**Importación desde GitHub:** seleccionar **Root Directory `deployment/vercel-app`**, **Framework Other**, build `node build.mjs` y salida `public`. El snapshot contiene solo código/configuración publicables y sus hashes. Streamlit permanece intacto. Los despliegues automáticos por Git están desactivados en esa configuración. La [guía de importación](docs/VERCEL_IMPORTACION.md) detalla variables, permisos y artefactos pendientes; no pulsar Deploy todavía. Integración verificada: **236/236 pruebas Python y 6/6 JavaScript**.
+
 | Destino | Enlace y estado |
 |---|---|
 | Código | [Repositorio GitHub existente](https://github.com/Juandeleongarcia/caso-2-prediccion-petroleo), rama `main`, [revisión de entrega en main](https://github.com/Juandeleongarcia/caso-2-prediccion-petroleo/tree/main). |
-| Modelos y evidencia portable | Hugging Face Models: pendiente de permisos y publicación; no se inventa una URL. |
-| Aplicación alojada | Streamlit Community Cloud elegido para preparación gratuita, pendiente de autorización, permisos y validación Linux/remota. No se inventa una URL. |
+| Modelos y evidencia portable | [Hugging Face Models privado](https://huggingface.co/Juaandeleoon/caso-2-prediccion-petroleo): seis archivos observados; pendientes permisos acreditados y verificación de descarga desde el servidor. No contiene todo el histórico/evidencia necesario. |
+| Aplicación alojada | Nueva web preparada para revisar frontend estático en Vercel; backend PyTorch pendiente de validación Linux/remota y permisos. Streamlit se conserva. No hay despliegue. |
 
 ## Instalación e inferencia sin entrenar
 

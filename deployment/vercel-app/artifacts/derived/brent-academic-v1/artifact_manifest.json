@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "bundle_id": "brent-academic-v1",
+  "artifact_kind": "additional_scores_from_frozen_predictions",
+  "r2_formula": "1 - sum((y_pred-y_true)^2) / sum((y_true-mean(y_true))^2)",
+  "undefined_r2": "Missing when n < 2 or target variance is zero; never replaced by zero or one",
+  "aggregation": "Separate experiment, phase, model, variant, seed, horizon; phase totals recompute over pairs",
+  "original_results_modified": false,
+  "models_trained": false,
+  "source_files": {
+    "cpu-final-evaluation-v1/checkpoints.pt": "c0ef346d831e9811a9defc20da15fb50baf3ec6798bffc63300d691c9f05eb55",
+    "cpu-final-evaluation-v1/experiment.json": "b5113059d24808bdfa9afbeb38fafff0e182cf036143f377653383f0a9e6a9f3",
+    "cpu-final-evaluation-v1/folds.csv": "bc28544039131751f7b00cae436a0c96f8e3ab668559569e660e6aee7ea67d9f",
+    "cpu-final-evaluation-v1/history.csv": "5ce8f91671abd0fd7c06641f9ec1cc92f5eda0c5a27c481fb225388bc3071fa1",
+    "cpu-final-evaluation-v1/interval_metrics.csv": "10b66d86693ff2f0f55c102ee61b733dde6e13e12dd6b4b76ebc479b339b5f9f",
+    "cpu-final-evaluation-v1/intervals.json": "21e8709cfdb2b56c6f57529d3ec6d43cbd32f0704b99cb868287d571394ee720",
+    "cpu-final-evaluation-v1/metrics.csv": "430a8112aec0d3547637ad42b326ce2f53d128314d80b486c41fb939ff1b08f9",
+    "cpu-final-evaluation-v1/predictions.csv": "3056be79e163bf9eb3593259dd218a0ef51d298dec77724aa3763d94c77c5c80",
+    "cpu-final-evaluation-v1/protocol.json": "024acbb4f26444970b71e1c97fd20586925f0aa9934c86c8799de12846212e8c",
+    "cpu-nested-ab-20epochs-seeds-v1/checkpoints.pt": "a2d8fbe45019fdd329dc2ac34f7c6e3d8526f72695149cfa0c807a794824be6c",
+    "cpu-nested-ab-20epochs-seeds-v1/diagnostics.csv": "d3de8d890d224faa5033ad0f6bf7d2420143f204f535d19be9ba7a8f2ad78f2f",
+    "cpu-nested-ab-20epochs-seeds-v1/experiment.json": "522ccf5d3e2a8b8237e56a31a1a0355be0d3f7d4a7ffbd66b3760eaef3a6b7ae",
+    "cpu-nested-ab-20epochs-seeds-v1/history.csv": "991c212dd14956479507b2d05fbba736f724043600423980a16dd21cc5f328ac",
+    "cpu-nested-ab-20epochs-seeds-v1/inner_folds.csv": "8c8d879896507f87ff97721ebbf6003f1d1e4d0ee96c2d3dbdcdd11080f1848d",
+    "cpu-nested-ab-20epochs-seeds-v1/metrics.csv": "cc42bdcf201d1ec8ee4b2b174bffa3e331bd3ba4d1235c6627d55b341385ea76",
+    "cpu-nested-ab-20epochs-seeds-v1/predictions.csv": "825bdc102464fdb58cb9aa898c944b504eff927be603b5681936835d300393ac",
+    "cpu-refinement-persistence-init-v1/checkpoints.pt": "47b6e6206bb1c1aa88cb661bf040011f7547a1cf8cf5936b4a85e51bdf755172",
+    "cpu-refinement-persistence-init-v1/diagnostics.csv": "8844b49b4ba4d03a6dad35395ac3eca1792870822a5eba0a1296b9ff243ec1b3",
+    "cpu-refinement-persistence-init-v1/experiment.json": "ce47cc9fe4b44728f0b26396e2f7933e9f3d0b045d3c39b8a421d54b45468a45",
+    "cpu-refinement-persistence-init-v1/history.csv": "70f77c56c1acddba0535632144f6eb5062a61d1c2cb0906ad1c6fa679f1f614a",
+    "cpu-refinement-persistence-init-v1/inner_folds.csv": "8c8d879896507f87ff97721ebbf6003f1d1e4d0ee96c2d3dbdcdd11080f1848d",
+    "cpu-refinement-persistence-init-v1/metrics.csv": "2c0db7c6b65878039268ed030a2ec92a2597f4fb3fe912d430860f7528475489",
+    "cpu-refinement-persistence-init-v1/predictions.csv": "0a9a06b47a7dc711ea197d6d6e237d692be03dd062e1c8fb685d1ed5f35eedd1",
+    "cpu-smoke-3epochs-seed42/checkpoints.pt": "9c5d067576587fe0c74ee5554f83c719d630035406a1de4ae94eee0a7fbb7e46",
+    "cpu-smoke-3epochs-seed42/experiment.json": "ba9c22e2fe72323c342b6e3fd8b7d110cd91f6f76b87d61412d00366efc7a218",
+    "cpu-smoke-3epochs-seed42/history.csv": "9b60d4c073a1b2f91d9b4ec84ecf0fbeffc7d1f13916935383a36abfdb58b81d",
+    "cpu-smoke-3epochs-seed42/metrics.csv": "ded89c8d4bbe1712142e2e07fef096f77cca3652a0269ad9bd5d156a7406c93f",
+    "cpu-smoke-3epochs-seed42/predictions.csv": "68b7648782b52b11280e21b37675449630565a00872e5c0d37ae94bcfee0aa5e"
+  },
+  "row_counts": {
+    "metrics.csv": 1017
+  },
+  "files": {
+    "metrics.csv": {
+      "sha256": "c515c35c537fca52f4c0b082aa69acdac39261053e66ed30b7f077416a8ba129",
+      "size": 154259
+    }
+  }
+}

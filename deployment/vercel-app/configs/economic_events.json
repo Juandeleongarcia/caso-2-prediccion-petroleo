@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-11-16",
+  "marker_policy": "Seleccionar únicamente observaciones Brent spot originales del histórico activo dentro del intervalo indicado. maximum/minimum/latest describen el punto de la serie; su fecha no es necesariamente la fecha causal del acontecimiento. No rellenar precios ni escoger extremos de ventanas parciales como si cubrieran el episodio completo.",
+  "causality_note": "Los hechos documentados y su interpretación económica se presentan por separado. Los marcadores son contexto retrospectivo, no entradas nuevas de las redes ni estimaciones causales.",
+  "events": [
+    {
+      "id": "peak_2008",
+      "title": "2008 · Máximo previo a la crisis",
+      "period_start": "2008-07-01",
+      "period_end": "2008-07-31",
+      "marker_rule": "maximum",
+      "documented_fact": "La revisión del Parlamento británico sitúa el máximo del petróleo en julio de 2008, antes de la intensa caída de la segunda mitad del año.",
+      "economic_interpretation": "La oferta, la demanda y las expectativas condicionan el precio. El máximo del gráfico describe un extremo observado; no demuestra una causa única del movimiento.",
+      "channels": [
+        "oferta",
+        "demanda",
+        "ciclo económico"
+      ],
+      "sources": [
+        {
+          "title": "House of Commons Library · Oil Prices",
+          "url": "https://commonslibrary.parliament.uk/research-briefings/sn02106/",
+          "published_at": "2022-11-07",
+          "accessed_at": "2026-11-16"
+        }
+      ]
+    },
+    {
+      "id": "financial_crisis_2008",
+      "title": "2008 · Crisis financiera y desplome",
+      "period_start": "2008-07-01",
+      "period_end": "2008-12-31",
+      "marker_rule": "minimum",
+      "documented_fact": "En la segunda mitad de 2008, los precios cayeron con fuerza mientras se extendía la crisis financiera mundial, según la revisión del Parlamento británico.",
+      "economic_interpretation": "El deterioro de la actividad y de las expectativas puede reducir la demanda energética. El mínimo del periodo ilustra el descenso, sin atribuir cada variación diaria a un solo suceso.",
+      "channels": [
+        "demanda",
+        "ciclo económico",
+        "incertidumbre"
+      ],
+      "sources": [
+        {
+          "title": "House of Commons Library · Oil Prices",
+          "url": "https://commonslibrary.parliament.uk/research-briefings/sn02106/",
+          "published_at": "2022-11-07",
+          "accessed_at": "2026-11-16"
+        }
+      ]
+    },
+    {
+      "id": "oversupply_2014_2016",
+      "title": "2014–2016 · Exceso de oferta",
+      "period_start": "2014-07-01",
+      "period_end": "2016-12-31",
+      "marker_rule": "minimum",
+      "documented_fact": "La EIA relacionó la caída de 2015 con una oferta mundial superior a la demanda y acumulación de inventarios. La producción y los inventarios elevados siguieron presionando los precios durante gran parte de 2016.",
+      "economic_interpretation": "El exceso de producción y la capacidad de almacenamiento condicionan el ajuste, junto con las perspectivas de crecimiento y las decisiones de los productores.",
+      "channels": [
+        "oferta",
+        "inventarios",
+        "ciclo económico"
+      ],
+      "sources": [
+        {
+          "title": "EIA · Crude oil prices started 2015 relatively low, ended the year lower",
+          "url": "https://www.eia.gov/todayinenergy/detail.php?id=24432",
+          "published_at": "2016-01-06",
+          "accessed_at": "2026-11-16"
+        },
+        {
+          "title": "EIA · Crude oil prices increased in 2016, still below 2015 averages",
+          "url": "https://www.eia.gov/todayinenergy/detail.php?id=29412",
+          "published_at": "2017-01-04",
+          "accessed_at": "2026-11-16"
+        }
+      ]
+    },
+    {
+      "id": "pandemic_2020",
+      "title": "2020 · Pandemia y caída de la demanda",
+      "period_start": "2020-03-01",
+      "period_end": "2020-05-31",
+      "marker_rule": "minimum",
+      "documented_fact": "La EIA documentó una fuerte reducción de la demanda de petróleo, recortes de actividad de refino y acumulación de inventarios durante las primeras respuestas a la pandemia.",
+      "economic_interpretation": "La menor movilidad y el desajuste entre producción, consumo y almacenamiento amplificaron la volatilidad. Los precios negativos del 20 de abril correspondieron al futuro WTI, no al Brent spot mostrado.",
+      "channels": [
+        "demanda",
+        "inventarios",
+        "ciclo económico"
+      ],
+      "sources": [
+        {
+          "title": "EIA · Crude oil prices briefly traded below $0 in spring 2020 but have since been mostly flat",
+          "url": "https://www.eia.gov/todayinenergy/detail.php?id=46336",
+          "published_at": "2021-01-05",
+          "accessed_at": "2026-11-16"
+        }
+      ]
+    },
+    {
+      "id": "ukraine_2022",
+      "title": "2022 · Ucrania y crisis energética",
+      "period_start": "2022-02-24",
+      "period_end": "2022-06-30",
+      "marker_rule": "maximum",
+      "documented_fact": "Tras la invasión de Ucrania, la IEA describió fuertes subidas, riesgo de interrupciones del suministro ruso y posteriores descensos asociados también a preocupaciones económicas y volatilidad.",
+      "economic_interpretation": "Las expectativas de escasez, las sanciones y la incertidumbre geopolítica pueden elevar el coste energético. La demanda y la actividad económica también modulan la respuesta del precio.",
+      "channels": [
+        "riesgo geopolítico",
+        "oferta",
+        "demanda"
+      ],
+      "sources": [
+        {
+          "title": "IEA · Oil Market Report — March 2022",
+          "url": "https://www.iea.org/reports/oil-market-report-march-2022",
+          "published_at": "2022-03-16",
+          "accessed_at": "2026-11-16"
+        }
+      ]
+    },
+    {
+      "id": "recent_flows_2026",
+      "title": "2026 · Flujos, inventarios y riesgo",
+      "period_start": "2026-08-01",
+      "period_end": "2026-11-16",
+      "marker_rule": "latest",
+      "documented_fact": "En su informe de noviembre de 2026, la EIA describió alzas previas del Brent, reducción de inventarios y alteraciones del transporte marítimo. También informó una relajación de los precios al recuperarse parte de los flujos de oferta.",
+      "economic_interpretation": "Las restricciones de oferta y el riesgo geopolítico pueden sostener precios; la recuperación de flujos y la debilidad de la demanda pueden presionarlos a la baja. Este contexto no explica por sí solo cada variación diaria.",
+      "channels": [
+        "oferta",
+        "inventarios",
+        "riesgo geopolítico",
+        "demanda"
+      ],
+      "sources": [
+        {
+          "title": "EIA · Short-Term Energy Outlook — Global oil markets, November 2026",
+          "url": "https://www.eia.gov/outlooks/steo/report/global_oil.php",
+          "published_at": "2026-11-10",
+          "accessed_at": "2026-11-16"
+        }
+      ],
+      "source_note": "La fuente contiene hechos, estimaciones y previsiones de la EIA. Este texto utiliza su descripción de movimientos ya observados; no presenta sus previsiones para 2027 como hechos ni como salidas de nuestras redes. Revisión documental: 16/11/2026."
+    }
+  ],
+  "opec_review": {
+    "reviewed_at": "2026-11-16",
+    "status": "historical_daily_download_not_verified",
+    "identity": "El portal oficial identifica la misma OPEC Reference Basket (ORB), una cesta de crudos de miembros de OPEP. Su composición y metodología han cambiado históricamente; no equivale al Brent ni a futuros.",
+    "finding": "La página oficial accesible enlaza el mismo XML del proyecto. La consulta web no pudo leerlo por el tipo MIME text/xml; eso no demuestra que el HTTP 403 previo haya desaparecido ni permite verificar la cobertura diaria completa.",
+    "coverage": "No se validó una descarga diaria histórica reproducible y completa en esta revisión limitada. Las medias de boletines oficiales no sustituyen una serie diaria.",
+    "conditions": "El Data Policy Disclaimer consultado trata privacidad y cookies, no una licencia de redistribución de la serie. No se confirmó autorización para redistribuir íntegramente el histórico diario.",
+    "decision": "Conservar la limitación documentada. No añadir una entrada al modelo ni mostrar una cotización OPEP no verificada. El estado HTTP de una consulta real de actualización debe registrarse por separado.",
+    "sources": [
+      {
+        "title": "OPEC · Basket Price",
+        "url": "https://www.opec.org/opec-basket-price.html"
+      },
+      {
+        "title": "OPEC · Daily basket XML",
+        "url": "https://www.opec.org/basket/basketDayArchives.xml"
+      },
+      {
+        "title": "OPEC · Data Policy Disclaimer",
+        "url": "https://www.opec.org/data-policy-disclaimer.html"
+      }
+    ]
+  }
+}

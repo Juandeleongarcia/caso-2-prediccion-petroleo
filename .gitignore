@@ -278,3 +278,16 @@ docs/auditoria/
 
 # Public deployment template; real secrets remain excluded.
 !/deployment/community-cloud/secrets.example.toml
+
+# Presentación pausada: conservar borradores y exportaciones solo en local.
+/presentacion/
+/presentacion_final/
+/.chart-data-*/
+
+# Generated public-only Vercel build.
+/web/frontend/public/
+
+.vercel/
+
+# CDN output is rebuilt by Vercel; only the reviewed source snapshot is versioned.
+/deployment/vercel-app/public/

@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "bundle_id": "brent-frozen-v1",
+  "archive": {
+    "filename": "brent-frozen-v1.zip",
+    "local_path": "artifacts/releases/brent-frozen-v1.zip",
+    "sha256": "2ccf6f181772420dfbd1650c726b72ac6c936f1e2eb1fed82b3ef99c049f7f2a",
+    "size_bytes": 176139,
+    "published_url": null
+  },
+  "installation_directory": "artifacts/local/brent-frozen-v1",
+  "manifest_sha256": "b46e805265e050495727ea0069b0ca8035f92e8266e1f44ec9ddf31a8ee05f30",
+  "selected_model": "LSTM-B",
+  "selected_seed": 42,
+  "candidates": {
+    "RNN": "D",
+    "LSTM": "B",
+    "GRU": "C"
+  },
+  "epochs": {
+    "RNN": 4,
+    "LSTM": 3,
+    "GRU": 5
+  },
+  "horizons": [
+    5,
+    63,
+    252
+  ],
+  "logical_refit_at": "2024-07-01T06:00:00+00:00",
+  "training_cutoff": "2024-06-28T06:00:00+00:00",
+  "latest_train_origin": "2023-06-28",
+  "latest_train_label_available_at": "2024-06-28T06:00:00+00:00",
+  "actual_training_execution_at": null,
+  "training_execution_provenance": "Not recorded; logical backtest dates are not execution timestamps",
+  "snapshot": "2026-11-11-official",
+  "data_updated_at": "2026-11-11T21:08:21.056273+00:00",
+  "latest_origin_date": "2026-11-11",
+  "reference_observation_date": "2026-10-28",
+  "source_final_report_sha256": "b5113059d24808bdfa9afbeb38fafff0e182cf036143f377653383f0a9e6a9f3",
+  "source_checkpoint_sha256": "c0ef346d831e9811a9defc20da15fb50baf3ec6798bffc63300d691c9f05eb55",
+  "source_protocol_sha256": "024acbb4f26444970b71e1c97fd20586925f0aa9934c86c8799de12846212e8c",
+  "environment": {
+    "python": "3.13.7",
+    "torch": "2.15.0+cpu",
+    "numpy": "2.5.4",
+    "pandas": "3.1.0",
+    "device": "cpu",
+    "threads": 1
+  },
+  "distribution_status": "Local archive prepared; no upload or release published",
+  "portability_scope": "Windows CPU verified; Linux wheel declared in Poetry lock but cloud deployment not executed",
+  "trust_rule": "Verify the archive digest from this independently versioned registry before loading weights"
+}

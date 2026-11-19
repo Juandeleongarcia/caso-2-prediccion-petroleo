@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "bundle_id": "brent-dashboard-v1",
+  "archive": {
+    "filename": "brent-dashboard-v1.zip",
+    "local_path": "artifacts/releases/brent-dashboard-v1.zip",
+    "sha256": "2b26b26d90383c3ab0c27a563714cae0ca668f94538d7e1bfcdbcd2542a45620",
+    "size_bytes": 2594014,
+    "published_url": null
+  },
+  "installation_directory": "artifacts/local/brent-dashboard-v1",
+  "manifest_sha256": "39750b4c1b9e4f18602bef92a0690643c37cc01deb278b17bc42830312497a11",
+  "row_counts": {
+    "metrics.csv": 1017,
+    "history.csv": 1668,
+    "predictions.csv": 54762
+  },
+  "distribution_status": "Local only; no publication authorized"
+}

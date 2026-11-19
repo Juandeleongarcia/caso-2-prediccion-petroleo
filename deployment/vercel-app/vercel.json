@@ -1,0 +1,87 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "fluid": true,
+  "git": {
+    "deploymentEnabled": false
+  },
+  "buildCommand": "node build.mjs",
+  "outputDirectory": "public",
+  "functions": {
+    "api/forecast.py": {
+      "maxDuration": 300,
+      "excludeFiles": "{public/**,web/frontend/**,build.mjs,source_manifest.json,verify_runtime.py,Dockerfile.check}"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/health",
+      "destination": "/api/forecast?__brent_endpoint=health"
+    },
+    {
+      "source": "/api/ready",
+      "destination": "/api/forecast?__brent_endpoint=ready"
+    },
+    {
+      "source": "/api/models",
+      "destination": "/api/forecast?__brent_endpoint=models"
+    },
+    {
+      "source": "/api/overview",
+      "destination": "/api/forecast?__brent_endpoint=overview"
+    },
+    {
+      "source": "/api/predict",
+      "destination": "/api/forecast?__brent_endpoint=predict"
+    },
+    {
+      "source": "/api/archive-origins",
+      "destination": "/api/forecast?__brent_endpoint=archive-origins"
+    },
+    {
+      "source": "/api/comparison",
+      "destination": "/api/forecast?__brent_endpoint=comparison"
+    },
+    {
+      "source": "/api/evaluation",
+      "destination": "/api/forecast?__brent_endpoint=evaluation"
+    },
+    {
+      "source": "/api/refresh",
+      "destination": "/api/forecast?__brent_endpoint=refresh"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    },
+    {
+      "source": "/config.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    }
+  ]
+}

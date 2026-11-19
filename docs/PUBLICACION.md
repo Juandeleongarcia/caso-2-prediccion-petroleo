@@ -2,9 +2,11 @@
 
 El código del Prompt 11 está publicado en [GitHub/main, commit 389530b](https://github.com/Juandeleongarcia/caso-2-prediccion-petroleo/tree/389530b78d42a1f76273c8f2608c08cc5c6805ce). Tras autorización expresa se verificó el contenido remoto: 75 rutas cambiadas, 80 archivos totales, sin datos ni pesos. Las secciones de preparación del Prompt 11 se conservan como registro de esa revisión.
 
-**Estado vigente — cierre del Prompt 17:** el estudiante ha autorizado el commit y el push a `origin/main` de los 23 cambios revisados de código, documentación, configuración y pruebas. La aplicación principal sigue siendo `app.py`, con inferencia neuronal real local. Los datos, experimentos, pesos y paquetes restringidos quedan excluidos; su publicación y cualquier despliegue siguen sin autorización.
+**Historial — nueva fase técnica 1 (19/11/2026):** la revisión publicada del Prompt 17 permanece en `45929b3`. La presentación queda pausada con todos sus borradores conservados. La nueva revisión local de limpieza no autoriza commit, push, reentrenamiento ni despliegue. La sección J contiene el alcance vigente; las secciones anteriores conservan el historial de los Prompts 11–17 y sus autorizaciones históricas.
 
-La **sección I** describe esta revisión final. Las secciones A–H conservan el registro histórico de decisiones y comprobaciones; sus referencias a autorizaciones pendientes corresponden a aquellas fases. El contenido público actual se consulta en [GitHub/main](https://github.com/Juandeleongarcia/caso-2-prediccion-petroleo/tree/main).
+La aplicación principal sigue siendo `app.py`, con inferencia neuronal real local. Los datos, experimentos, pesos y paquetes restringidos siguen excluidos. La nueva cuenta/destino de Models comunicada por el estudiante es `Juaandeleoon/caso-2-prediccion-petroleo`; su comprobación corresponde a la siguiente fase, todavía no iniciada.
+
+**Alcance autorizado más reciente:** integración y publicación en origin/main exclusivamente de código, configuración, dependencias, pruebas y documentación necesarias para importar la web completa desde GitHub con Root Directory `deployment/vercel-app`. No se autoriza desplegar ni publicar datos, ZIP, pesos, transformadores o resultados individuales adicionales. Los permisos pendientes de esos materiales permanecen vigentes. Véase [importación de Vercel](VERCEL_IMPORTACION.md). Las restricciones de no commit/push de fases anteriores se conservan como historial y quedan superadas únicamente para estos archivos seguros.
 
 ## Clasificación y conservación
 
@@ -578,3 +580,88 @@ No se detecta un nuevo bloqueo para publicar el código, documentación propia y
 La publicación no incluye Hugging Face Models ni Streamlit Community Cloud. El profesor puede consultar el código y las métricas agregadas en GitHub y ver la aplicación completa localmente; para ejecutarla desde un clon necesita acceso autorizado a ambos paquetes. Permanecen pendientes la presentación de máximo cinco diapositivas de contenido, la identificación/declaración académica final y la resolución de permisos si se pretende distribuir o alojar artefactos. ORB sigue ausente y la disponibilidad histórica point-in-time no está certificada.
 
 El commit se identifica en el historial de `main`; el cierre exige comprobar que `origin/main` y HEAD coinciden, que el árbol remoto contiene las 93 rutas esperadas y que el estado local queda limpio. Los logs de verificación del push se conservan localmente; no se guardan tokens en informes ni mensajes.
+
+## J. Nueva fase técnica 1: organización y conservación
+
+### Diagnóstico y decisiones
+
+La estructura publicada ya separa responsabilidades. Se conserva para evitar romper imports, rutas de scripts, registros SHA256 y pruebas. No se eliminan módulos de investigación, scripts históricos, pruebas, materiales docentes ni la demostración limitada: todos tienen una función documentada. La demostración permanece independiente de la aplicación principal.
+
+| Carpeta/archivo | Responsabilidad | Conservación |
+|---|---|---|
+| `src/oil_forecast/models.py`, `training.py`, `experiment.py` | Arquitecturas, entrenamiento y orquestación científica | Código publicable, sin entrenar ahora |
+| `src/oil_forecast/temporal.py`, `preprocessing.py`, `supervised.py`, `validation.py` | Disponibilidad, transformaciones, ventanas y validación | Código publicable |
+| `src/oil_forecast/evaluation.py`, `uncertainty.py`, `academic.py` | Evaluación, intervalos y suplemento académico | Código publicable |
+| `src/oil_forecast/app_*.py`, `inference.py`, `refresh.py`, `deployment.py` | Presentación, inferencia, actualización y carga de artefactos | Código publicable |
+| `scripts/` | Ejecución de preparación, cuatro experimentos y empaquetado | Conservar todos los ejecutores |
+| `configs/` | Datos, protocolos, experimentos y registros de paquetes | Mantener nombres y rutas |
+| `tests/` | Pruebas científicas, integridad y aplicación | Conservar todas |
+| `app.py`, `.streamlit/` | Aplicación completa y tema; secretos excluidos | Entrada principal sin cambios |
+| `artifacts/derived/brent-academic-v1/` | Métricas agregadas y manifiesto publicables | Sin modificaciones |
+| `docs/`, `README.md` | Enunciado, instrucciones docentes, ejecución y publicación | Documentación pública; auditorías internas excluidas |
+| `data/`, `experiments/`, `artifacts/releases/`, `artifacts/local/` | Datos, experimentos, pesos, resultados, paquetes y evidencias | Conservados fuera de Git |
+| `presentacion/` | PowerPoint, PDF candidato, guion y borradores | Pausados y excluidos de Git; no constituyen una entrega final validada |
+
+### Limpieza efectuada
+
+Se trasladaron tres carpetas `.chart-data-*` de la raíz a `artifacts/local/presentation/export-recovery/`, conservando sus cinco archivos y verificando SHA256 antes y después. Son salidas auxiliares de la exportación, no experimentos de ML. Se conservaron también los 21 archivos inventariados de la presentación y su zona de construcción, sin recorrer ni modificar el enlace a las dependencias suministradas.
+
+No se eliminó ningún archivo. `.gitignore` añade exclusiones de raíz para `presentacion/`, `presentacion_final/` y `.chart-data-*/`, evitando publicar borradores, copias de exportación o datos de gráficos accidentalmente. No se cambian dependencias, configuraciones científicas, rutas funcionales ni código Python. Las comprobaciones de conservación se guardan localmente en `artifacts/local/repository-phase1/`.
+
+### Límite de esta fase y siguiente paso
+
+Los 93 archivos publicados anteriormente permanecen en Git; esta fase prepara únicamente cambios locales en `.gitignore`, README y esta guía. La presentación se retomará al final, con su exportación y validación pendientes. No se ha actualizado GitHub.
+
+Antes de iniciar Models se revisarán el nuevo destino facilitado, autenticación segura, licencia de cada artefacto y la lista mínima para inferencia CPU de las tres redes. Los bloqueos anteriores de los paquetes mixtos de FRED/Yahoo y derivados siguen vigentes hasta contar con evidencia suficiente; crear un repositorio no autoriza redistribución. No se reutilizará automáticamente el destino anterior ni se cambiarán registros congelados para apuntar a uno nuevo.
+
+GitHub Actions, reentrenamiento manual versionado, publicación tras pruebas y mejoras de Streamlit quedan para fases posteriores. Cualquier entrenamiento nuevo tendrá destinos independientes de los experimentos cerrados. Ninguna de esas funciones se implementa o ejecuta en esta limpieza.
+
+### Verificaciones de la fase 1
+
+- `test_app_data.py`: 7/7 pruebas superadas sin omisiones (1,327 s), incluyendo las tres redes reales, comparación por semillas, predicciones archivadas y actualización temporal. La primera ejecución restringida falló en limpieza de temporales por permisos del sandbox; al repetir con acceso a temporales finalizó correctamente, sin modificar producción.
+- `poetry check --lock`, `python -m pip check` y `git diff --check`: correctos. Sin instalaciones ni cambios de dependencias.
+- SHA256: 163 recursos protegidos, 92 filas del inventario y 21 archivos del borrador/construcción de presentación intactos; los cinco archivos trasladados conservan sus hashes.
+- Nueve comprobaciones de exclusión Git correctas y ningún archivo ignorado ya versionado. Sin archivos nuevos candidatos; solo tres archivos públicos modificados: `.gitignore`, README y esta guía. Índice sin cambios preparados.
+- No se repite la batería científica de 210 pruebas ni la revisión visual completa porque el código funcional y los recursos científicos permanecen intactos. Esta fase no acredita nuevas capacidades de Actions, Models o despliegue.
+
+## K. Fase 2: candidato mínimo de Models (19/11/2026)
+
+Destino comunicado: `Juaandeleoon/caso-2-prediccion-petroleo`. Candidato local: `artifacts/local/hf-minimal-v1/`, excluido de Git. No se realizó carga, autenticación, commit, push ni despliegue. No se cambian los registros congelados ni la ficha antigua inventariada: describen paquetes distintos y permanecen como evidencia.
+
+### Inventario técnico, no autorización de carga
+
+| Archivo | Bytes | Función |
+|---|---:|---|
+| `checkpoints.pt` | 65389 | Tres redes canónicas42, configuraciones y transformadores de entrada/objetivo |
+| `protocol.json` | 3279 | Contrato científico original, variables, horizontes y fechas |
+| `intervals.json` | 7570 | Cuantiles y metadatos de calibración originales, sin residuos individuales |
+| `load_models.py` | 2361 | Cargador CPU independiente, requiere el código GitHub fijado |
+| `manifest.json` | 963 | Inventario y SHA256 de los cinco payloads, incluido el cargador y la ficha |
+| `README.md` | 9070 | Nueva Model Card, uso, resultados, límites y bloqueo de permisos |
+| **Total** | **88632** | Aproximadamente86,55KiB |
+
+El mínimo matemático para estimaciones puntuales es el checkpoint y el código compatible que contiene arquitectura/transformación y orden de entradas. Para reproducir también fechas, referencias, política temporal y bandas se mantienen los tres archivos científicos exactos, 76238bytes. Se excluyen ambos ZIP mixtos, históricos, última ventana, predicciones archivadas, datasets, historiales completos, métricas redundantes y el experimento completo. No se elimina ninguno de sus originales. Las cuatro métricas agregadas siguen en GitHub y no requieren duplicarse en Models. No hay pesos de persistencia.
+
+La ficha nueva documenta Python3.13.7, PyTorch2.15.0+cpu, NumPy2.5.4, pandas3.1.0 y el código de `45929b3952c293d974b971d84f2dc751bb396020`; usar su Poetry lock para el entorno completo. El SDK de Hugging Face es opcional para la conexión futura y no se instala ahora. No se afirma una prueba Linux ni una instalación limpia nueva.
+
+### Pruebas y compatibilidad
+
+Cuatro pruebas locales superadas sin errores ni omisiones (1,060s): copias binarias idénticas, carga de tres redes CPU, equivalencia exacta de la respuesta completa frente al servicio original para una ventana real y una perturbación sintética, traslado sin históricos, rechazo de manifiesto no confiable y checkpoint alterado en una copia de prueba. Coinciden los nueve precios neuronales y sus cambios, referencias, fechas e intervalos en ambas ventanas. La perturbación es una prueba de contrato, no nueva evaluación de rendimiento. Los 163 recursos protegidos originales conservan sus hashes.
+
+Resultados y hashes completos: `artifacts/local/hf-minimal-v1-verification/verification.json`. SHA256 independiente del manifiesto mínimo: `0a087144d49fe504ba54d5498688535827f7c83b57913748f8f5f8a87dcf7570`.
+
+El `app.py` actual todavía requiere el manifiesto y datos de brent-frozen-v1 y evidencia de dashboard. El candidato mínimo NO es un reemplazo directo del ZIP. La fase de aplicación debe separar carga neuronal, suministro de ventana actual y evidencia histórica, sin suprimir funciones. `evaluation_metrics()` del cargador mínimo devuelve un marco vacío; la comparación se alimentará con los agregados verificados de GitHub.
+
+La conexión reproducible prevista usa el cliente oficial, allowlist exacta de seis nombres y revisión real de40hex, con HF_TOKEN solo en secretos si procede. Antes de importar el cargador descargado o abrir pesos debe verificarse el manifiesto contra un hash independiente y cada payload. Mantener una instalación previa válida y evitar sobrescribirla en descargas fallidas. No se ha efectuado descarga remota: no hay revisión publicada de este candidato y no se inventa una. La documentación oficial explica revisión fija y allow_patterns: https://huggingface.co/docs/huggingface_hub/guides/download .
+
+### Permisos pendientes y siguiente acción
+
+Revisión documental de19/11/2026:
+
+- https://fred.stlouisfed.org/legal/ : contiene una restricción explícita de desarrollo/entrenamiento ML que alcanza también usos educativos. La versión histórica aplicable y el alcance sobre distribución de pesos, transformadores y cuantiles requieren aclaración escrita. Esto no demuestra automáticamente que un peso sea una copia del dataset.
+- https://www.eia.gov/about/copyrights_reuse.php : permite reutilización de productos propios de EIA, con reconocimiento y fecha y excepciones para material de terceros. No concede permiso para todas las fuentes ni elimina condiciones de FRED.
+- https://github.com/ranaroussi/yfinance : Apache2 cubre la biblioteca, no concede derechos sobre datos Yahoo. No se halló un permiso explícito para redistribuir estos derivados multifuente. Debe aclararse con los titulares aplicables, incluidas restricciones de series de terceros como VIX/Cboe.
+
+**Estado:** código y ficha propios son candidatos sujetos a autorización del autor. Pesos, transformadores y cuantiles no tienen permiso de redistribución acreditado y quedan bloqueados para carga. Reducir el paquete o hacer privado el repositorio no resuelve el bloqueo. No se solicita ni almacena un token en esta fase.
+
+Para continuar: obtener autorización o una aclaración documentada que cubra el entrenamiento histórico y la distribución/alojamiento/uso del checkpoint, estadísticas de transformación y cuantiles con procedencia FRED/Yahoo/terceros. Después aprobar la lista exacta y la carga; verificar identidad, repo y visibilidad mediante autenticación oficial; publicar solo archivos aprobados; registrar la revisión remota real; descargar, cotejar hashes y repetir inferencia CPU. Solo entonces configurar Streamlit. Si el permiso no existe, mantener estos modelos localmente y decidir otra vía de datos/modelos en una fase autorizada distinta, sin alterar los experimentos cerrados.
