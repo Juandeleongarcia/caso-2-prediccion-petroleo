@@ -185,6 +185,8 @@ class LiveContracts(unittest.TestCase):
         self.assertIn('workflow_dispatch:',workflow);self.assertIn('cron:',workflow)
         self.assertIn('contents: read',workflow);self.assertNotIn('uses: actions/upload-artifact',workflow)
         self.assertNotIn('run_final_evaluation.py',workflow)
+        self.assertIn('BRENT_FRED_TRANSPORT: curl',workflow)
+        self.assertIn("if: failure() && steps.acquire.outcome == 'failure'",workflow)
 
     def test_provider_error_diagnostics_exclude_urls_tokens_and_exception_strings(self):
         error=HTTPError('https://private.example/?token=secret-value',503,'secret-value',{},None)

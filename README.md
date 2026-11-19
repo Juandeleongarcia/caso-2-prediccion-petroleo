@@ -364,3 +364,6 @@ La configuración gratuita está en la [plantilla de Community Cloud](deployment
 La autoría es individual. Se ha utilizado asistencia de IA para programación, revisión técnica y documentación; el estudiante debe confirmar su identificación y declaración académica conforme a las normas aplicables. La responsabilidad académica no se delega en la herramienta.
 
 La presentación de **máximo cinco diapositivas de contenido, sin contar portadas**, queda para una fase posterior. La publicación de esta revisión del código y la documentación fue autorizada expresamente en el cierre. Los artefactos restringidos permanecen excluidos y no se autoriza ningún despliegue.
+
+
+La validación manual del canal diario está [acreditada en GitHub Actions](https://github.com/Juandeleongarcia/caso-2-prediccion-petroleo/actions/runs/44556450853): diez fuentes, tres redes CPU, `status=validated` y `weights_updated=false`, sin publicación. Se corrigió un timeout de FRED específico del transporte del runner; [diagnóstico y repetición segura](docs/ACTUALIZACION_DIARIA.md#corrección-acreditada-del-primer-fallo-de-actions-19-11-2026). El cron y la publicación no se activan por superar ese ensayo.

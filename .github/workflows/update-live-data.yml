@@ -48,8 +48,11 @@ jobs:
           uv pip install --system --require-hashes -r deployment/automation/requirements.txt
           uv pip check --system
       - name: Test data pipeline and publication controls offline
-        run: python -B -W error -m unittest discover -s tests -p test_live_data.py -v
+        run: |
+          python -B -W error -m unittest discover -s tests -p test_preparation.py -v
+          python -B -W error -m unittest discover -s tests -p test_live_data.py -v
       - name: Acquire, validate three frozen networks, then optionally publish
+        id: acquire
         env:
           HF_TOKEN: ${{ secrets.HF_LIVE_WRITE_TOKEN }}
           PUBLISH_REQUESTED: ${{ github.event_name == 'schedule' || inputs.publish }}
@@ -58,12 +61,12 @@ jobs:
           if [ "$PUBLISH_REQUESTED" = "true" ]; then args+=(--publish); fi
           python -B scripts/update_live_data.py --workdir "artifacts/local/actions-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" "${args[@]}"
       - name: Diagnose official FRED connectivity after a failure (no credentials)
-        if: failure()
+        if: failure() && steps.acquire.outcome == 'failure'
         run: |
           # Only HTTP codes/exit codes are printed; no response bodies or headers.
           for target in graph_csv api_observations; do
             if [ "$target" = graph_csv ]; then
-              url='https://fred.stlouisfed.org/graph/fredgraph.csv?id=DCOILBRENTEU&cosd=2000-01-01&coed=2026-11-18'
+              url="https://fred.stlouisfed.org/graph/fredgraph.csv?id=DCOILBRENTEU&cosd=2000-01-01&coed=$(date -u +%F)"
             else
               url='https://api.stlouisfed.org/fred/series/observations?series_id=DCOILBRENTEU&file_type=json'
             fi
